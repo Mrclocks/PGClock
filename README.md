@@ -5,11 +5,12 @@
 <h1 align="center">PGClock</h1>
 
 <p align="center">
-تمپلیت صفحه کاربری پنل پاسارگارد </p>
+تمپلیت صفحه کاربری پنل پاسارگارد
+</p>
 
 <br>
 
-## ✨ ویژگی‌ها
+**✨ ویژگی‌ها**
 
 * طراحی مینیمال با سبک شیشه ای
 * نمایش اطلاعات کاربر
@@ -19,17 +20,17 @@
 
 ---
 
+**🔧 نصب و راه اندازی**
 
-## 🔧 نصب و راه اندازی 
-
-از طریق ترمینال وارد سرور پاسارگارد شوید 
+از طریق ترمینال وارد سرور پاسارگارد شوید
 
 فایل `index.html` را دانلود کنید :
+
 ```bash
 sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html
 ```
 
-فایل .env را ویرایش کنید:
+فایل `env.` را ویرایش کنید :
 
 ```bash
 sudo nano /opt/pasarguard/.env
