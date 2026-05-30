@@ -19,32 +19,14 @@
 
 ---
 
-## 🚀 نصب خودکار
 
+## 🔧 نصب و راه اندازی 
+
+از طریق ترمینال وارد سرور پاسارگارد شوید 
+
+فایل `index.html` را دانلود کنید :
 ```bash
-sudo bash <(curl -fsSL https://raw.githubusercontent.com/Mrclocks/PGClock/main/install.sh)
-```
-
-یا:
-
-```bash
-sudo bash <(wget -qO- https://raw.githubusercontent.com/Mrclocks/PGClock/main/install.sh)
-```
-
-اسکریپت نصب به‌صورت خودکار:
-
-* قالب را دانلود و نصب می‌کند
-* مقادیر لازم را به `.env` اضافه یا بروزرسانی می‌کند
-* سرویس PasarGuard را ریستارت می‌کند
-
----
-
-## 🔧 نصب دستی
-
-فایل `index.html` را دانلود کرده و در مسیر زیر قرار دهید:
-
-```text
-/var/lib/pasarguard/templates/subscription/index.html
+sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html
 ```
 
 فایل تنظیمات را ویرایش کنید:
