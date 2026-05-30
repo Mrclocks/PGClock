@@ -29,7 +29,7 @@
 sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html
 ```
 
-فایل تنظیمات را ویرایش کنید:
+فایل .env را ویرایش کنید:
 
 ```bash
 sudo nano /opt/pasarguard/.env
@@ -42,7 +42,7 @@ CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"
 SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
 ```
 
-در پایان سرویس را ریستارت کنید:
+در پایان پاسارگارد را ریستارت کنید:
 
 ```bash
 sudo pasarguard restart
