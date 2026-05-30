@@ -1,0 +1,1788 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>اشتراک</title>
+  <style>
+    :root {
+      --r-xl: 28px;
+      --r-lg: 20px;
+      --r-pill: 999px;
+      --blur: 56px;
+      --glass-bg: rgba(255, 255, 255, 0.075);
+      --glass-bg-elevated: rgba(255, 255, 255, 0.105);
+      --glass-stroke: rgba(255, 255, 255, 0.18);
+      --glass-stroke-soft: rgba(255, 255, 255, 0.075);
+      --specular: rgba(255, 255, 255, 0.34);
+      --text: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.62);
+      --text-tertiary: rgba(255, 255, 255, 0.42);
+      --fill: rgba(255, 255, 255, 0.065);
+      --fill-thick: rgba(255, 255, 255, 0.105);
+      --blue: #20a4ff;
+      --green: #37e66f;
+      --orange: #ff8a00;
+      --tap: 48px;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+      --pad-x: 24px;
+      --pad-y: 24px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      color: var(--text);
+      background: #000;
+      padding: max(34px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: #050508;
+    }
+    .ambient .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.65;
+      animation: float 20s ease-in-out infinite alternate;
+    }
+    .ambient .o1 { width: 85vmin; height: 85vmin; top: -25%; right: -30%; background: #1e3a8a; }
+    .ambient .o2 { width: 70vmin; height: 70vmin; bottom: 10%; left: -35%; background: #5b21b6; animation-delay: -8s; }
+    .ambient .o3 { width: 50vmin; height: 50vmin; top: 40%; left: 20%; background: #0e7490; opacity: 0.35; animation-delay: -4s; }
+    @keyframes float { to { transform: translate(4%, 6%) scale(1.08); } }
+
+    .page { max-width: 440px; margin: 0 auto; }
+
+    .glass {
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur)) saturate(190%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(190%);
+      border-radius: var(--r-xl);
+      border: 0.5px solid var(--glass-stroke);
+      box-shadow: var(--shadow), inset 0 1px 0 var(--specular);
+      overflow: hidden;
+    }
+    .glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(145deg, rgba(255,255,255,0.09) 0%, transparent 42%);
+      pointer-events: none;
+    }
+
+    .login-sheet { padding: var(--pad-y) var(--pad-x); }
+    .login-sheet h1 {
+      margin: 0 0 20px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      padding-right: 4px;
+    }
+    .field {
+      width: 100%;
+      min-height: var(--tap);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      border: none;
+      border-radius: var(--r-lg);
+      background: var(--fill);
+      color: var(--text);
+      font-size: 17px;
+      direction: ltr;
+      text-align: left;
+      outline: none;
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+    .field:focus {
+      background: var(--fill-thick);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.35);
+    }
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 52px;
+      margin-top: 6px;
+      border: none;
+      border-radius: var(--r-pill);
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 8px 28px rgba(10, 132, 255, 0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.12s;
+    }
+    .btn-primary:active { transform: scale(0.97); filter: brightness(0.92); }
+
+    .banner-error {
+      margin-bottom: 12px;
+      padding: 14px 16px;
+      border-radius: var(--r-lg);
+      font-size: 15px;
+      line-height: 1.4;
+      background: rgba(255, 69, 58, 0.18);
+      border: 0.5px solid rgba(255, 69, 58, 0.45);
+      color: #ffb4b0;
+    }
+
+    #main {
+      display: none;
+      opacity: 0;
+    }
+    #main.visible {
+      display: block;
+      animation: main-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes main-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-loading {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 24px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.14);
+      backdrop-filter: blur(10px) saturate(145%);
+      -webkit-backdrop-filter: blur(10px) saturate(145%);
+      pointer-events: none;
+    }
+    .loading-text {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .profile {
+      padding: var(--pad-y) var(--pad-x);
+      margin-bottom: 12px;
+    }
+    .profile-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(145deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06));
+      border: 0.5px solid var(--glass-stroke);
+      box-shadow: inset 0 1px 0 var(--specular);
+    }
+    .profile-id { flex: 1; min-width: 0; }
+    .profile-id .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin: 0 0 2px;
+    }
+    .profile-id .name {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      direction: ltr;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(48, 209, 88, 0.22);
+      color: #86efac;
+      border: 0.5px solid rgba(48, 209, 88, 0.4);
+      flex-shrink: 0;
+    }
+    .status-pill.expired, .status-pill.limited { background: rgba(255, 159, 10, 0.2); color: #fcd34d; border-color: rgba(255, 159, 10, 0.4); }
+    .status-pill.disabled { background: var(--fill); color: var(--text-secondary); border-color: var(--glass-stroke-soft); }
+    .status-pill.on_hold { background: rgba(191, 90, 242, 0.22); color: #e9d5ff; border-color: rgba(191, 90, 242, 0.4); }
+
+    .info-grid,
+    .traffic-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .info-grid { margin-bottom: 8px; }
+    .traffic-grid { margin-top: 0; }
+    .info-cell {
+      padding: 12px 16px;
+      border-radius: var(--r-lg);
+      background: var(--fill);
+      border: 0.5px solid var(--glass-stroke-soft);
+    }
+    .info-cell .k {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .info-cell .v {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .conn-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--tap);
+      padding: var(--pad-y) var(--pad-x);
+      border-top: 0.5px solid var(--glass-stroke-soft);
+    }
+    .conn-row:first-child { border-top: none; }
+    .conn-row .ico-svg {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      line-height: 0;
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+    }
+    .conn-row .ico-svg svg { width: 20px; height: 20px; display: block; }
+    .conn-row .ico-svg.tint-blue { background: rgba(32, 164, 255, 0.34); color: #8ed8ff; }
+    .conn-row .ico-svg.tint-green { background: rgba(55, 230, 111, 0.28); color: #96f7b8; }
+    .conn-row .ico-svg.tint-purple { background: rgba(208, 102, 255, 0.28); color: #efc8ff; }
+    .conn-row .ico-svg.tint-orange { background: rgba(255, 138, 0, 0.46); color: #ffd09a; }
+    .conn-row .ico-svg.tint-yellow { background: rgba(255, 224, 32, 0.32); color: #fff2a3; }
+    .conn-row .body { flex: 1; min-width: 0; text-align: right; }
+    .conn-row .title { font-size: 16px; font-weight: 500; display: block; letter-spacing: -0.02em; }
+    .conn-row .sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 3px;
+      direction: ltr;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-copy {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.12s, color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .btn-copy svg { width: 20px; height: 20px; }
+    .btn-copy:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.12); }
+    .btn-copy.copied { color: var(--green); background: rgba(48, 209, 88, 0.18); border-color: rgba(48, 209, 88, 0.35); }
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn-qr {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.12s, color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .btn-qr svg { width: 20px; height: 20px; }
+    .btn-qr:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.12); }
+
+    .tabs-shell {
+      margin-bottom: 12px;
+    }
+    .tabs-card {
+      margin-bottom: 0;
+    }
+    .tab-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      margin: 0 2px 10px;
+      border-radius: var(--r-pill);
+      background: var(--fill);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 0.5px solid var(--glass-stroke-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 10px 26px rgba(0, 0, 0, 0.18);
+    }
+    .tab-btn {
+      flex: 1;
+      min-height: 40px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      transition: background 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .tab-btn:active { transform: scale(0.98); }
+    .tab-btn.active {
+      color: var(--text);
+      background: var(--fill-thick);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 6px 14px rgba(0, 0, 0, 0.12);
+    }
+    .tabs-content {
+      position: relative;
+      z-index: 1;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .empty-state {
+      padding: var(--pad-y) var(--pad-x);
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .platform-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .platform-accordion {
+      border-top: 0.5px solid var(--glass-stroke-soft);
+      transition: background 0.18s;
+    }
+    .platform-accordion:first-child { border-top: none; }
+    .platform-accordion.open {
+      background: rgba(255, 255, 255, 0.035);
+    }
+    .platform-accordion.current {
+      background: linear-gradient(145deg, rgba(32, 164, 255, 0.06), rgba(255, 255, 255, 0.025));
+    }
+    .platform-toggle {
+      width: 100%;
+      min-height: 68px;
+      padding: var(--pad-y) var(--pad-x);
+      border: none;
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+      cursor: pointer;
+      font: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .platform-toggle:active {
+      background: var(--fill);
+    }
+    .platform-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      line-height: 0;
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: var(--text);
+    }
+    .platform-icon svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      overflow: visible;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .platform-icon.tag-blue { color: #8ed8ff; background: rgba(32, 164, 255, 0.24); border-color: rgba(32, 164, 255, 0.34); }
+    .platform-icon.tag-green { color: #96f7b8; background: rgba(55, 230, 111, 0.22); border-color: rgba(55, 230, 111, 0.36); }
+    .platform-icon.tag-light { color: #fff; background: var(--fill-thick); border-color: var(--glass-stroke); }
+    .platform-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .platform-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .platform-title {
+      flex: 0 1 auto;
+      min-width: 0;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .platform-count {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+    .platform-current {
+      flex-shrink: 0;
+      padding: 4px 9px;
+      border-radius: var(--r-pill);
+      font-size: 11px;
+      font-weight: 700;
+      color: #8ed8ff;
+      background: rgba(32, 164, 255, 0.16);
+      border: 0.5px solid rgba(32, 164, 255, 0.32);
+    }
+    .platform-chev {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      line-height: 0;
+      color: var(--text-secondary);
+      background: var(--fill);
+      border: 0.5px solid var(--glass-stroke-soft);
+      transition: background 0.18s;
+    }
+    .platform-chev svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 0.18s;
+    }
+    .platform-accordion.open .platform-chev {
+      background: var(--fill-thick);
+    }
+    .platform-accordion.open .platform-chev svg {
+      transform: rotate(180deg);
+    }
+    .platform-content {
+      display: none;
+      border-top: 0.5px solid var(--glass-stroke-soft);
+    }
+    .platform-accordion.open .platform-content {
+      display: block;
+    }
+    .platform-apps .app-card:first-child {
+      border-top: none;
+    }
+    .app-card {
+      padding: var(--pad-y) var(--pad-x);
+      border-top: 0.5px solid var(--glass-stroke-soft);
+    }
+    .app-card:first-child { border-top: none; }
+    .app-card .app-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .app-card .app-title-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .app-card .app-name { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+    .app-card .app-desc {
+      margin: -2px 0 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+    .app-card .app-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      border: 0.5px solid transparent;
+    }
+    .app-card .app-tag.tag-blue {
+      color: var(--blue);
+      background: rgba(32, 164, 255, 0.24);
+      border-color: rgba(32, 164, 255, 0.4);
+    }
+    .app-card .app-tag.tag-light {
+      color: #f5f5f7;
+      background: var(--fill-thick);
+      border-color: var(--glass-stroke);
+    }
+    .app-card .app-tag.tag-green {
+      color: #96f7b8;
+      background: rgba(55, 230, 111, 0.24);
+      border-color: rgba(55, 230, 111, 0.42);
+    }
+    .app-card .app-tag.tag-orange {
+      color: #ffd09a;
+      background: rgba(255, 138, 0, 0.18);
+      border-color: rgba(255, 138, 0, 0.34);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+    }
+    .app-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .app-btns .im {
+      flex: 1 1 100%;
+      min-width: 100%;
+      width: 100%;
+    }
+    .app-btns[data-dl-count="1"] .dl {
+      flex: 1 1 100%;
+      min-width: 100%;
+      width: 100%;
+    }
+    .app-btns[data-dl-count="2"] .dl {
+      flex: 1 1 calc(50% - 4px);
+      min-width: calc(50% - 4px);
+    }
+    .app-btns a.dl, .app-btns a.im {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: var(--r-pill);
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+    .app-btns a:active { transform: scale(0.97); }
+    .app-btns .dl {
+      background: var(--fill-thick);
+      color: var(--text);
+      border: 0.5px solid var(--glass-stroke-soft);
+    }
+    .app-btns .im {
+      background: var(--blue);
+      color: #fff;
+    }
+    .app-btns a.dl.copied,
+    .app-btns a.im.copied {
+      color: #fff;
+      background: var(--green);
+      border-color: rgba(55, 230, 111, 0.46);
+      box-shadow: 0 6px 20px rgba(55, 230, 111, 0.38);
+    }
+    .app-btns a.im.copied {
+      box-shadow: none;
+    }
+
+    .announce {
+      position: relative;
+      overflow: hidden;
+      padding: var(--pad-y) var(--pad-x);
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.6;
+      text-align: center;
+      white-space: pre-wrap;
+      color: #fff7e8;
+      border-radius: var(--r-xl);
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-stroke);
+      backdrop-filter: blur(var(--blur)) saturate(190%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(190%);
+      box-shadow: var(--shadow), inset 0 1px 0 var(--specular);
+    }
+    .announce::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(145deg, rgba(255,255,255,0.09) 0%, transparent 42%);
+      pointer-events: none;
+    }
+    .announce-line {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      max-width: 100%;
+      text-align: center;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .announce-dot {
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 0 rgba(255, 138, 0, 0.6);
+      animation: announcePulse 1.6s ease-out infinite;
+    }
+    .announce-text { min-width: 0; }
+    @keyframes announcePulse {
+      70% { box-shadow: 0 0 0 8px rgba(255, 138, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 138, 0, 0); }
+    }
+    .announce p { text-align: center; margin: 0.4rem 0 0; position: relative; z-index: 1; font-size: 13px; font-weight: 700; }
+    .announce a { color: #ffe1a6; font-weight: 700; }
+    .announce-link { margin: 0.5rem 0 0; }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      padding: 12px 22px;
+      border-radius: var(--r-pill);
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--glass-bg-elevated);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 0.5px solid var(--glass-stroke);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .qr-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+    }
+    .qr-modal.show { display: flex; }
+    .qr-sheet {
+      width: min(100%, 340px);
+      padding: 18px;
+      text-align: center;
+    }
+    .qr-title {
+      margin: 0 0 14px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #qr-canvas {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 236px;
+      min-height: 236px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 20px;
+      background: #fff;
+    }
+    #qr-canvas canvas,
+    #qr-canvas img {
+      display: block;
+      width: 220px;
+      height: 220px;
+    }
+    .qr-loading {
+      color: #10131f;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .qr-close {
+      width: 100%;
+      min-height: 46px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .qr-close:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+  </div>
+
+  <div class="page">
+    <div id="login-card" class="glass login-sheet">
+      <h1>اشتراک</h1>
+      <label class="field-label" for="panel-url">آدرس پنل</label>
+      <input class="field" id="panel-url" type="url" placeholder="https://panel.example.com" autocomplete="off">
+      <label class="field-label" for="sub-token">لینک یا توکن</label>
+      <input class="field" id="sub-token" type="text" placeholder="https://…/sub/…" autocomplete="off">
+      <button type="button" class="btn-primary" id="btn-load">ادامه</button>
+    </div>
+
+    <div id="error" class="banner-error hidden"></div>
+
+    <div id="page-loading" class="page-loading hidden" role="status" aria-live="polite" aria-busy="true">
+      <span class="loading-text">در حال دریافت اطلاعات</span>
+    </div>
+
+    <div id="main">
+      <div id="announce" class="announce hidden"></div>
+
+      <section class="glass profile">
+        <div class="profile-head">
+          <div class="avatar" id="avatar-letter">?</div>
+          <div class="profile-id">
+            <p class="label">حساب کاربری</p>
+            <h1 class="name" id="f-username">—</h1>
+          </div>
+          <span class="status-pill active" id="f-status">—</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-cell">
+            <span class="k">انقضا</span>
+            <span class="v" id="f-expire">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">آخرین اتصال</span>
+            <span class="v" id="f-online">—</span>
+          </div>
+        </div>
+
+        <div class="traffic-grid">
+          <div class="info-cell">
+            <span class="k">مصرف کل</span>
+            <span class="v" id="f-lifetime">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">مصرف دوره</span>
+            <span class="v" id="f-used">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">حجم کل</span>
+            <span class="v" id="f-limit">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">باقیمانده</span>
+            <span class="v" id="f-remain">—</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="tabs-shell" id="content-tabs">
+        <div class="tab-switcher" role="tablist" aria-label="محتوای اشتراک">
+          <button type="button" class="tab-btn active" data-tab="apps" role="tab" aria-selected="true" aria-controls="apps-panel">اپلیکیشن‌ها</button>
+          <button type="button" class="tab-btn" data-tab="configs" role="tab" aria-selected="false" aria-controls="configs-panel">کانفیگ‌ها</button>
+        </div>
+        <section class="glass tabs-card">
+          <div class="tabs-content">
+            <div class="tab-panel active" id="apps-panel" role="tabpanel">
+              <div id="apps-list"></div>
+            </div>
+            <div class="tab-panel" id="configs-panel" role="tabpanel">
+              <div id="connections-list"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="qr-modal" id="qr-modal" aria-hidden="true">
+    <section class="glass qr-sheet" role="dialog" aria-modal="true" aria-labelledby="qr-title">
+      <h2 class="qr-title" id="qr-title">QR Code</h2>
+      <div id="qr-canvas" aria-label="QR Code"></div>
+      <button type="button" class="qr-close" id="qr-close">بستن</button>
+    </section>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  var LS_PANEL = 'pg_panel_url';
+  var LS_TOKEN = 'pg_sub_token';
+  var LS_PAGE_PREFIX = 'pg_page_cache:';
+  var toastTimer;
+
+  function $(id) { return document.getElementById(id); }
+  function show(el, on) { el.classList.toggle('hidden', !on); }
+
+  function toast(msg) {
+    var el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2000);
+  }
+
+  function flashCopy(btn) {
+    btn.classList.add('copied');
+    setTimeout(function () { btn.classList.remove('copied'); }, 1200);
+  }
+
+  var SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  var SVG_LINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  var SVG_STACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
+  var SVG_NETWORK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.3 2.5 3.5 5.5 3.5 9S14.3 18.5 12 21"/><path d="M12 3C9.7 5.5 8.5 8.5 8.5 12S9.7 18.5 12 21"/></svg>';
+  var SVG_QR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M14 14h2v2h-2z"/><path d="M18 14h2v2h-2z"/><path d="M14 18h2v2h-2z"/><path d="M18 18h2v2h-2z"/></svg>';
+  var SVG_APPLE = '<svg viewBox="5 3 16 17" fill="currentColor" aria-hidden="true"><path d="M16.9 12.1c0-1.8 1.5-2.7 1.6-2.8-.9-1.2-2.2-1.4-2.6-1.4-1.1-.1-2.1.6-2.7.6-.6 0-1.4-.6-2.3-.6-1.2 0-2.4.7-3 1.8-1.3 2.2-.3 5.5.9 7.3.6.9 1.4 1.9 2.4 1.9.9 0 1.3-.6 2.4-.6s1.4.6 2.4.6 1.7-.9 2.3-1.8c.7-1 1-2.1 1-2.1-.1 0-2.4-.9-2.4-2.9zM15.2 6.7c.5-.6.8-1.4.8-2.2-.8 0-1.6.5-2.1 1.1-.5.5-.9 1.3-.8 2.1.8.1 1.6-.4 2.1-1z"/></svg>';
+  var SVG_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  var SVG_ANDROID = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10h10v7a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-7z"/><path d="M8.5 10a3.5 3.5 0 0 1 7 0"/><path d="M8.5 6.5 7 4.5"/><path d="M15.5 6.5 17 4.5"/><path d="M10 14h.01"/><path d="M14 14h.01"/><path d="M5 12v4"/><path d="M19 12v4"/></svg>';
+  var SVG_WINDOWS = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5h7v6H4V5zm9 0h7v6h-7V5zM4 13h7v6H4v-6zm9 0h7v6h-7v-6z"/></svg>';
+  var SVG_LINUX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-2.4 0-4 2.1-4 5.1 0 1.5-.5 2.8-1.3 4.1L5 15.4C4.3 16.8 5.2 18 6.6 18h10.8c1.4 0 2.3-1.2 1.6-2.6l-1.7-3.2C16.5 10.9 16 9.6 16 8.1 16 5.1 14.4 3 12 3z"/><path d="M9 19.5 7.8 21"/><path d="M15 19.5l1.2 1.5"/><path d="M10 8h.01"/><path d="M14 8h.01"/></svg>';
+  var APP_PLATFORM_ORDER = ['ios', 'android', 'windows', 'macos', 'linux', 'appletv', 'androidtv', 'other'];
+
+  function linkType(raw) {
+    var low = raw.toLowerCase();
+    if (low.indexOf('vless://') === 0) return 'vless';
+    if (low.indexOf('vmess://') === 0) return 'vmess';
+    if (low.indexOf('trojan://') === 0) return 'trojan';
+    if (low.indexOf('wireguard://') === 0) return 'wireguard';
+    if (low.indexOf('hysteria') === 0) return 'hysteria';
+    if (low.indexOf('ss://') === 0 || low.indexOf('shadowsocks') === 0) return 'shadowsocks';
+    return 'proxy';
+  }
+
+  function protocolSvg(type) {
+    var map = {
+      vless: 'tint-blue',
+      vmess: 'tint-purple',
+      trojan: 'tint-orange',
+      wireguard: 'tint-green',
+      hysteria: 'tint-orange',
+      shadowsocks: 'tint-green',
+      proxy: ''
+    };
+    return { tint: map[type] || '', svg: SVG_NETWORK };
+  }
+
+  function copyBtnHtml() {
+    return '<button type="button" class="btn-copy" aria-label="کپی">' + SVG_COPY + '</button>';
+  }
+
+  function qrBtnHtml() {
+    return '<button type="button" class="btn-qr" aria-label="نمایش QR">' + SVG_QR + '</button>';
+  }
+
+  function actionBtnsHtml() {
+    return '<span class="row-actions">' + qrBtnHtml() + copyBtnHtml() + '</span>';
+  }
+
+  var qrLibPromise = null;
+
+  function loadQRCode() {
+    if (window.QRCode) return Promise.resolve();
+    if (qrLibPromise) return qrLibPromise;
+    qrLibPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = function () { reject(new Error('QR library failed to load')); };
+      document.head.appendChild(script);
+    });
+    return qrLibPromise;
+  }
+
+  function openQrModal(text, title) {
+    if (!text) return;
+    var modal = $('qr-modal');
+    var canvas = $('qr-canvas');
+    $('qr-title').textContent = title || 'QR Code';
+    canvas.innerHTML = '<span class="qr-loading">در حال ساخت QR</span>';
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+
+    loadQRCode().then(function () {
+      canvas.innerHTML = '';
+      try {
+        new QRCode(canvas, {
+          text: text,
+          width: 220,
+          height: 220,
+          colorDark: '#10131f',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (err) {
+        closeQrModal();
+        toast('لینک برای QR خیلی طولانی است');
+      }
+    }).catch(function () {
+      closeQrModal();
+      toast('خطا در ساخت QR');
+    });
+  }
+
+  function closeQrModal() {
+    var modal = $('qr-modal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    $('qr-canvas').innerHTML = '';
+  }
+
+  function setError(msg) {
+    var box = $('error');
+    if (!msg) { show(box, false); box.textContent = ''; return; }
+    box.textContent = msg;
+    show(box, true);
+  }
+
+  function showMain(options) {
+    if (!options || !options.keepLoading) hideLoading();
+    show($('login-card'), false);
+    $('main').classList.add('visible');
+  }
+
+  function showLogin() {
+    hideLoading();
+    $('main').classList.remove('visible');
+    show($('login-card'), true);
+  }
+
+  function showLoading() {
+    show($('login-card'), false);
+    show($('page-loading'), true);
+  }
+
+  function hideLoading() {
+    show($('page-loading'), false);
+  }
+
+  function cacheKey(ctx) {
+    return LS_PAGE_PREFIX + ctx.subUrl;
+  }
+
+  function readPageCache(ctx) {
+    try {
+      var raw = localStorage.getItem(cacheKey(ctx));
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writePageCache(ctx, data) {
+    try {
+      localStorage.setItem(cacheKey(ctx), JSON.stringify({
+        savedAt: Date.now(),
+        user: data.user,
+        headers: data.headers || {},
+        links: data.links || [],
+        apps: data.apps || []
+      }));
+    } catch (e) {}
+  }
+
+  function withTimeout(promise, ms, message) {
+    return new Promise(function (resolve, reject) {
+      var done = false;
+      var timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        reject(new Error(message || 'Request timeout'));
+      }, ms);
+
+      promise.then(function (value) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(value);
+      }).catch(function (err) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+  }
+
+  function renderPageData(ctx, data) {
+    if (!data) return;
+    if (data.user) renderUser(data.user);
+    renderAnnounce(data.headers || {});
+    renderConnections(ctx.subUrl, data.links || []);
+    renderApps(data.apps || []);
+  }
+
+  function toPersianDigits(value) {
+    return String(value).replace(/\d/g, function (digit) {
+      return '۰۱۲۳۴۵۶۷۸۹'[digit];
+    });
+  }
+
+  function formatBytes(n) {
+    if (n == null || isNaN(n)) return '—';
+    if (n === 0) return '۰ بایت';
+    var u = ['بایت','کیلوبایت','مگابایت','گیگابایت','ترابایت'];
+    var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
+    var value = (n / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0);
+    return toPersianDigits(value) + ' ' + u[i];
+  }
+
+  function formatDate(v) {
+    if (!v) return 'نامحدود';
+    try {
+      return new Date(v).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) { return String(v); }
+  }
+
+  function normalizeStatus(s) {
+    if (!s) return 'active';
+    if (typeof s === 'object' && s.name) return String(s.name).toLowerCase();
+    return String(s).toLowerCase();
+  }
+
+  function cleanToken(value) {
+    var token = String(value || '').trim().replace(/[\u200B-\u200D\uFEFF]/g, '');
+    token = token.replace(/^['"]|['"]$/g, '');
+    try { token = decodeURIComponent(token); } catch (e) {}
+    return token.replace(/^\/+|\/+$/g, '');
+  }
+
+  function tokenFromUrlObject(u) {
+    var parts = u.pathname.split('/').filter(Boolean);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].toLowerCase() === 'sub' && parts[i + 1]) {
+        return { token: cleanToken(parts[i + 1]) };
+      }
+    }
+
+    var keys = ['token', 'sub', 'sub_token', 'subscription', 'subscription_token'];
+    for (var k = 0; k < keys.length; k++) {
+      var found = u.searchParams.get(keys[k]);
+      if (found) {
+        var nested = parseTokenInput(found);
+        if (nested && nested.token) return nested;
+        return { token: cleanToken(found) };
+      }
+    }
+    return null;
+  }
+
+  function parseTokenInput(raw) {
+    raw = (raw || '').trim().replace(/[\u200B-\u200D\uFEFF]/g, '');
+    if (!raw) return null;
+
+    try {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+        var u = new URL(raw);
+        var parsedUrl = tokenFromUrlObject(u);
+        if (parsedUrl && parsedUrl.token) {
+          var panelParam = u.searchParams.get('panel') || u.searchParams.get('panel_url') || u.searchParams.get('base_url');
+          var panel = parsedUrl.panel || panelParam || (/^https?:$/i.test(u.protocol) ? u.origin : '');
+          return { panel: panel, token: parsedUrl.token };
+        }
+        var hashParsed = parseTokenInput(u.hash.replace(/^#/, ''));
+        if (hashParsed && hashParsed.token) {
+          return { panel: hashParsed.panel || (/^https?:$/i.test(u.protocol) ? u.origin : ''), token: hashParsed.token };
+        }
+      }
+    } catch (e) {}
+
+    var panelMatch = raw.match(/^(https?:\/\/[^/?#\s]+)/i);
+    var pathMatch = raw.match(/(?:^|[/?#&\s])sub\/([^/?#&\s]+)/i);
+    if (pathMatch) {
+      return {
+        panel: panelMatch ? panelMatch[1] : undefined,
+        token: cleanToken(pathMatch[1])
+      };
+    }
+
+    var queryMatch = raw.match(/(?:^|[?&#])(?:token|sub|sub_token|subscription|subscription_token)=([^&#\s]+)/i);
+    if (queryMatch) return { panel: panelMatch ? panelMatch[1] : undefined, token: cleanToken(queryMatch[1]) };
+
+    if (!/\s/.test(raw) && raw.indexOf('://') === -1 && raw.indexOf('/') === -1 && raw.indexOf('?') === -1 && raw.indexOf('#') === -1) {
+      return { token: cleanToken(raw) };
+    }
+    return null;
+  }
+
+  function resolveContext(panelInput, tokenInput) {
+    var parsed = parseTokenInput(tokenInput);
+    if (!parsed) return null;
+    var panel = (parsed.panel || panelInput || '').trim().replace(/\/+$/, '');
+    if (panel && panel !== 'null' && !/^https?:\/\//i.test(panel)) panel = 'https://' + panel;
+    if (!panel || panel === 'null') {
+      var origin = window.location.origin;
+      if (/^https?:\/\//i.test(origin)) panel = origin;
+    }
+    if (!panel || panel === 'null') return null;
+    if (!parsed.token) return null;
+    var subPath = '/sub/' + encodeURIComponent(parsed.token);
+    return {
+      panel: panel, token: parsed.token, subPath: subPath,
+      subUrl: panel + subPath,
+      infoUrl: panel + subPath + '/info',
+      appsUrl: panel + subPath + '/apps',
+      linksUrl: panel + subPath + '/links'
+    };
+  }
+
+  function detectFromCurrentUrl() {
+    var fromHref = parseTokenInput(window.location.href);
+    if (fromHref && fromHref.token) return resolveContext(fromHref.panel || '', fromHref.token);
+
+    var fromHash = parseTokenInput(window.location.hash.replace(/^#/, ''));
+    if (fromHash && fromHash.token) return resolveContext(fromHash.panel || '', fromHash.token);
+
+    var params = new URLSearchParams(window.location.search);
+    var panelParam = params.get('panel') || params.get('panel_url') || params.get('base_url') || window.location.origin;
+    var keys = ['token', 'sub', 'sub_token', 'subscription', 'subscription_token'];
+    for (var i = 0; i < keys.length; i++) {
+      var q = params.get(keys[i]);
+      if (q) return resolveContext(panelParam, q);
+    }
+    return null;
+  }
+
+  function decodeAnnounce(raw) {
+    if (!raw) return '';
+    if (raw.indexOf('base64:') === 0) {
+      return decodeBase64Utf8(raw.slice(7).trim()) || raw.slice(7);
+    }
+    try { return decodeURIComponent(raw); } catch (e) { return raw; }
+  }
+
+  function copyText(text, btn) {
+    var done = function () {
+      toast('کپی شد');
+      if (btn) flashCopy(btn);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(done);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); resolve(); }
+      catch (e) { reject(e); }
+      document.body.removeChild(ta);
+    });
+  }
+
+  function fetchInfo(ctx) {
+    return fetch(ctx.infoUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('خطا در دریافت اطلاعات (' + res.status + ')');
+        return res.json().then(function (data) {
+          var headers = {};
+          ['announce', 'announce-url', 'support-url'].forEach(function (h) {
+            var v = res.headers.get(h);
+            if (v) headers[h] = v;
+          });
+          return { data: data, headers: headers };
+        });
+      });
+  }
+
+  function fetchApps(ctx) {
+    return fetch(ctx.appsUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (res) { return res.ok ? res.json() : []; })
+      .catch(function () { return []; });
+  }
+
+  function fetchLinks(ctx) {
+    return fetch(ctx.linksUrl, { credentials: 'same-origin' })
+      .then(function (res) {
+        if (!res.ok) return [];
+        return res.text().then(function (text) {
+          return text.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) {
+            return l && linkType(l) !== 'proxy';
+          });
+        });
+      })
+      .catch(function () { return []; });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  function safeDecode(value) {
+    if (!value) return '';
+    try { return decodeURIComponent(String(value).replace(/\+/g, '%20')); }
+    catch (e) { return String(value); }
+  }
+
+  function decodeBase64Utf8(value) {
+    try {
+      var normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
+      while (normalized.length % 4) normalized += '=';
+      var binary = atob(normalized);
+      var encoded = Array.prototype.map.call(binary, function (ch) {
+        return '%' + ('00' + ch.charCodeAt(0).toString(16)).slice(-2);
+      }).join('');
+      return decodeURIComponent(encoded);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function configDisplayName(raw) {
+    raw = String(raw || '').trim();
+    if (!raw) return '';
+
+    if (raw.toLowerCase().indexOf('vmess://') === 0) {
+      try {
+        var vmessJson = decodeBase64Utf8(raw.slice(8));
+        var vmess = JSON.parse(vmessJson);
+        if (vmess && vmess.ps) return safeDecode(vmess.ps).trim();
+      } catch (e) {}
+    }
+
+    try {
+      var url = new URL(raw);
+      var hashName = safeDecode(url.hash.replace(/^#/, '')).trim();
+      if (hashName) return hashName;
+
+      var params = url.searchParams;
+      var paramName = params.get('name') || params.get('remark') || params.get('remarks') || params.get('tag');
+      if (paramName) return safeDecode(paramName).trim();
+    } catch (e) {}
+
+    var hashIndex = raw.indexOf('#');
+    if (hashIndex >= 0) {
+      return safeDecode(raw.slice(hashIndex + 1)).trim();
+    }
+
+    return '';
+  }
+
+  function linkLabel(raw) {
+    var low = raw.toLowerCase();
+    if (low.indexOf('vless://') === 0) return 'VLESS';
+    if (low.indexOf('vmess://') === 0) return 'VMess';
+    if (low.indexOf('trojan://') === 0) return 'Trojan';
+    if (low.indexOf('wireguard://') === 0) return 'WireGuard';
+    if (low.indexOf('hysteria') === 0) return 'Hysteria';
+    if (low.indexOf('ss://') === 0 || low.indexOf('shadowsocks') === 0) return 'Shadowsocks';
+    return 'Proxy';
+  }
+
+  function renderUser(user) {
+    var status = normalizeStatus(user.status);
+    var labels = { active:'فعال', disabled:'غیرفعال', limited:'محدود', expired:'منقضی', on_hold:'معلق' };
+    var name = user.username || '—';
+    $('f-username').textContent = name;
+    document.title = name && name !== '—' ? name : 'اشتراک';
+    $('avatar-letter').textContent = (name.charAt(0) || '?').toUpperCase();
+
+    var pill = $('f-status');
+    pill.textContent = labels[status] || status;
+    pill.className = 'status-pill ' + status;
+
+    var used = user.used_traffic || 0;
+    var limit = user.data_limit;
+    $('f-used').textContent = formatBytes(used);
+    $('f-limit').textContent = !limit ? '∞' : formatBytes(limit);
+    $('f-remain').textContent = !limit ? '∞' : formatBytes(Math.max(0, limit - used));
+    $('f-lifetime').textContent = formatBytes(user.lifetime_used_traffic);
+
+    if (status === 'on_hold' && user.on_hold_expire_duration) {
+      var days = Math.floor(user.on_hold_expire_duration / 86400);
+      $('f-expire').textContent = toPersianDigits(days) + ' روز';
+    } else {
+      $('f-expire').textContent = formatDate(user.expire);
+    }
+    $('f-online').textContent = user.online_at ? formatDate(user.online_at) : 'هرگز';
+  }
+
+  function renderAnnounce(headers) {
+    var msg = decodeAnnounce(headers.announce);
+    var url = headers['announce-url'];
+    var box = $('announce');
+    if (!msg && !url) { show(box, false); return; }
+    var html = msg ? '<div class="announce-line"><span class="announce-dot" aria-hidden="true"></span><span class="announce-text">' + escapeHtml(msg) + '</span></div>' : '';
+    if (url) html += '<p class="announce-link"><a href="' + escapeAttr(url) + '" target="_blank" rel="noopener">جزئیات</a></p>';
+    box.innerHTML = html;
+    show(box, true);
+  }
+
+  var storedLinks = [];
+  var storedSubUrl = '';
+
+  function renderConnections(subUrl, links) {
+    storedSubUrl = subUrl;
+    storedLinks = links || [];
+    var html = '';
+
+    html += '<div class="conn-row" data-copy="sub">' +
+      '<span class="ico-svg tint-green">' + SVG_LINK + '</span>' +
+      '<span class="body"><span class="title">لینک اشتراک</span>' +
+      '<span class="sub">' + escapeHtml(subUrl) + '</span></span>' +
+      actionBtnsHtml() + '</div>';
+
+    if (storedLinks.length > 1) {
+      html += '<div class="conn-row" data-copy="all">' +
+        '<span class="ico-svg tint-yellow">' + SVG_STACK + '</span>' +
+        '<span class="body"><span class="title">کپی همه کانفیگ‌ها</span>' +
+        '<span class="sub">' + storedLinks.length + ' مورد</span></span>' +
+        copyBtnHtml() + '</div>';
+    }
+
+    storedLinks.forEach(function (raw, idx) {
+      var label = linkLabel(raw);
+      var name = configDisplayName(raw);
+      var title = name || (label + ' · ' + (idx + 1));
+      var preview = raw.length > 44 ? raw.slice(0, 44) + '…' : raw;
+      var proto = protocolSvg(linkType(raw));
+      html += '<div class="conn-row" data-copy="link" data-idx="' + idx + '">' +
+        '<span class="ico-svg ' + proto.tint + '">' + proto.svg + '</span>' +
+        '<span class="body"><span class="title">' + escapeHtml(title) + '</span>' +
+        '<span class="sub">' + escapeHtml((name ? label + ' · ' : '') + preview) + '</span></span>' +
+        actionBtnsHtml() + '</div>';
+    });
+
+    $('connections-list').innerHTML = html;
+
+    $('connections-list').querySelectorAll('.conn-row').forEach(function (row) {
+      var btn = row.querySelector('.btn-copy');
+      var qrBtn = row.querySelector('.btn-qr');
+
+      function rowPayload() {
+        var kind = row.getAttribute('data-copy');
+        if (kind === 'sub') return { text: storedSubUrl, title: 'لینک اشتراک' };
+        if (kind === 'all') return { text: storedLinks.join('\n'), title: 'همه کانفیگ‌ها' };
+        var i = parseInt(row.getAttribute('data-idx'), 10);
+        var raw = storedLinks[i] || '';
+        return { text: raw, title: configDisplayName(raw) || linkLabel(raw) };
+      }
+
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          copyText(rowPayload().text, btn);
+        });
+      }
+      if (qrBtn) {
+        qrBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var payload = rowPayload();
+          openQrModal(payload.text, payload.title);
+        });
+      }
+    });
+  }
+
+  function platformTagClass(platform) {
+    var p = canonicalPlatform(platform);
+    if (p === 'android' || p === 'androidtv') return 'tag-green';
+    if (p === 'ios' || p === 'macos' || p === 'appletv') return 'tag-light';
+    if (p === 'windows') return 'tag-blue';
+    return 'tag-blue';
+  }
+
+  function canonicalPlatform(platform) {
+    var p = String(platform || 'other').toLowerCase().replace(/[\s_-]+/g, '');
+    if (!p || p === 'undefined' || p === 'null') return 'other';
+    if (p === 'iphone' || p === 'ipad' || p === 'ipados') return 'ios';
+    if (p === 'mac' || p === 'macosx' || p === 'macintosh') return 'macos';
+    if (p === 'win' || p === 'win32' || p === 'win64') return 'windows';
+    if (p === 'appletvos' || p === 'tvos') return 'appletv';
+    if (p === 'googletv' || p === 'firetv') return 'androidtv';
+    return p;
+  }
+
+  function detectOS() {
+    var ua = (navigator.userAgent || '').toLowerCase();
+    var platform = (navigator.platform || '').toLowerCase();
+    var isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    var userAgentData = navigator.userAgentData;
+
+    if (userAgentData && userAgentData.platform) {
+      var uaPlatform = userAgentData.platform.toLowerCase();
+      if (uaPlatform.indexOf('tvos') > -1 || uaPlatform.indexOf('apple tv') > -1) return 'appletv';
+      if (uaPlatform.indexOf('android') > -1) {
+        return /android tv|google tv|googletv|fire tv|firetv/.test(ua) ? 'androidtv' : 'android';
+      }
+      if (uaPlatform.indexOf('ios') > -1 || uaPlatform === 'iphone' || uaPlatform === 'ipad') return 'ios';
+      if (uaPlatform.indexOf('windows') > -1) return 'windows';
+      if (uaPlatform.indexOf('mac') > -1) return 'macos';
+      if (uaPlatform.indexOf('linux') > -1) return 'linux';
+    }
+
+    if (/tvos|apple tv|appletv/.test(ua)) return 'appletv';
+    if (/android tv|google tv|googletv|fire tv|firetv/.test(ua)) return 'androidtv';
+    if (/iphone|ipad|ipod/.test(ua) || (platform === 'macintel' && 'ontouchend' in document)) return 'ios';
+    if (/android/.test(ua) || platform.indexOf('android') > -1) return 'android';
+    if (isTouch && (platform.indexOf('linux') > -1 || /linux/.test(ua))) {
+      if (/mobile|tablet|phone/.test(ua) || window.innerWidth <= 768) return 'android';
+    }
+    if (/windows|win32|win64/.test(ua) || platform.indexOf('win') > -1) return 'windows';
+    if (/macintosh|mac os x|macos/.test(ua) || platform.indexOf('mac') > -1) return 'macos';
+    if (/linux/.test(ua) || platform.indexOf('linux') > -1) return 'linux';
+    return 'unknown';
+  }
+
+  function mapOSToPlatform(os) {
+    return os === 'unknown' ? 'other' : canonicalPlatform(os);
+  }
+
+  function platformLabel(platform) {
+    var labels = {
+      ios: 'iOS',
+      android: 'Android',
+      windows: 'Windows',
+      macos: 'macOS',
+      linux: 'Linux',
+      appletv: 'Apple TV',
+      androidtv: 'Android TV',
+      other: 'سایر'
+    };
+    return labels[platform] || platform;
+  }
+
+  function platformIcon(platform) {
+    if (platform === 'ios' || platform === 'macos' || platform === 'appletv') return SVG_APPLE;
+    if (platform === 'android' || platform === 'androidtv') return SVG_ANDROID;
+    if (platform === 'windows') return SVG_WINDOWS;
+    if (platform === 'linux') return SVG_LINUX;
+    return SVG_NETWORK;
+  }
+
+  function appDescription(app) {
+    var desc = app && app.description;
+    if (!desc) return '';
+    if (typeof desc === 'string') return desc;
+
+    var lang = (document.documentElement.lang || navigator.language || 'fa').toLowerCase();
+    var shortLang = lang.split('-')[0];
+    return desc[shortLang] || desc.fa || desc.en || desc.ru || desc.zh || '';
+  }
+
+  function appCardHtml(app) {
+    var dlList = app.download_links || [];
+    var desc = appDescription(app);
+    var dls = dlList.map(function (d) {
+      return '<a class="dl" href="' + escapeAttr(d.url) + '" target="_blank" rel="noopener">' +
+        escapeHtml(d.name || 'دانلود') + '</a>';
+    }).join('');
+    var imp = app.import_url
+      ? '<a class="im" href="' + escapeAttr(app.import_url) + '" target="_blank" rel="noopener">افزودن اشتراک</a>'
+      : '';
+    var dlCount = Math.min(dlList.length, 2);
+    return '<div class="app-card">' +
+      '<div class="app-head"><span class="app-title-line"><span class="app-name">' + escapeHtml(app.name) +
+      '</span>' + (app.recommended ? '<span class="app-tag tag-orange">پیشنهادی</span>' : '') + '</span>' +
+      (app.platform ? '<span class="app-tag ' + platformTagClass(app.platform) + '">' + escapeHtml(app.platform) + '</span>' : '') +
+      '</div>' +
+      (desc ? '<div class="app-desc">' + escapeHtml(desc) + '</div>' : '') +
+      '<div class="app-btns" data-dl-count="' + dlCount + '">' + dls + imp + '</div></div>';
+  }
+
+  function groupAppsByPlatform(apps) {
+    var groups = {};
+    apps.forEach(function (app) {
+      var key = canonicalPlatform(app.platform);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(app);
+    });
+    return groups;
+  }
+
+  function orderedPlatformKeys(groups, currentPlatform) {
+    var preferred = currentPlatform && groups[currentPlatform]
+      ? [currentPlatform].concat(APP_PLATFORM_ORDER.filter(function (p) { return p !== currentPlatform; }))
+      : APP_PLATFORM_ORDER.slice();
+    var ordered = preferred.filter(function (p) { return groups[p] && groups[p].length; });
+    Object.keys(groups).sort().forEach(function (p) {
+      if (ordered.indexOf(p) === -1) ordered.push(p);
+    });
+    return ordered;
+  }
+
+  function renderApps(apps) {
+    if (!apps || !apps.length) {
+      $('apps-list').innerHTML = '<div class="empty-state">اپلیکیشنی برای نمایش نیست</div>';
+      return;
+    }
+
+    var detectedOS = detectOS();
+    var currentPlatform = detectedOS === 'unknown' ? '' : mapOSToPlatform(detectedOS);
+    var groups = groupAppsByPlatform(apps);
+    var keys = orderedPlatformKeys(groups, currentPlatform);
+    var defaultOpen = groups[currentPlatform] ? currentPlatform : keys[0];
+
+    $('apps-list').innerHTML = '<div class="platform-list">' + keys.map(function (key) {
+      var isCurrent = key === currentPlatform && !!groups[currentPlatform];
+      var isOpen = key === defaultOpen;
+      var appCount = groups[key].length;
+      return '<section class="platform-accordion' + (isOpen ? ' open' : '') + (isCurrent ? ' current' : '') + '" data-platform="' + escapeAttr(key) + '">' +
+        '<button type="button" class="platform-toggle" aria-expanded="' + (isOpen ? 'true' : 'false') + '">' +
+          '<span class="platform-icon ' + platformTagClass(key) + '">' + platformIcon(key) + '</span>' +
+          '<span class="platform-main">' +
+            '<span class="platform-title-row">' +
+              '<span class="platform-title">' + escapeHtml(platformLabel(key)) + '</span>' +
+              (isCurrent ? '<span class="platform-current">سیستم عامل شما</span>' : '') +
+            '</span>' +
+            '<span class="platform-count">' + toPersianDigits(appCount) + ' اپلیکیشن</span>' +
+          '</span>' +
+          '<span class="platform-chev">' + SVG_CHEV + '</span>' +
+        '</button>' +
+        '<div class="platform-content"><div class="platform-apps">' +
+          groups[key].map(appCardHtml).join('') +
+        '</div></div>' +
+      '</section>';
+    }).join('') + '</div>';
+
+    $('apps-list').querySelectorAll('.platform-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.closest('.platform-accordion');
+        var willOpen = !item.classList.contains('open');
+        $('apps-list').querySelectorAll('.platform-accordion').forEach(function (other) {
+          other.classList.remove('open');
+          var otherBtn = other.querySelector('.platform-toggle');
+          if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+        });
+        if (willOpen) {
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    $('apps-list').querySelectorAll('.app-btns a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        toast(link.classList.contains('im') ? 'در حال افزودن' : 'در حال دانلود');
+        flashCopy(link);
+      });
+    });
+  }
+
+  function setActiveTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      var isActive = btn.getAttribute('data-tab') === tab;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    $('apps-panel').classList.toggle('active', tab === 'apps');
+    $('configs-panel').classList.toggle('active', tab === 'configs');
+  }
+
+  function loadAll(ctx) {
+    setError('');
+    var cached = readPageCache(ctx);
+    var hasCache = cached && cached.user;
+
+    if (hasCache) {
+      renderPageData(ctx, cached);
+    } else {
+      renderConnections(ctx.subUrl, []);
+      renderApps([]);
+      renderAnnounce({});
+    }
+
+    if (hasCache) {
+      showMain();
+    } else {
+      showMain({ keepLoading: true });
+      showLoading();
+    }
+
+    var pageData = {
+      user: hasCache ? cached.user : null,
+      headers: hasCache ? (cached.headers || {}) : {},
+      links: hasCache ? (cached.links || []) : [],
+      apps: hasCache ? (cached.apps || []) : []
+    };
+    var infoError = null;
+
+    var infoPromise = withTimeout(fetchInfo(ctx), 10000, 'خطا در دریافت اطلاعات')
+      .then(function (infoResult) {
+        pageData.user = infoResult.data;
+        pageData.headers = infoResult.headers || {};
+        renderUser(pageData.user);
+        renderAnnounce(pageData.headers);
+        localStorage.setItem(LS_PANEL, ctx.panel);
+        localStorage.setItem(LS_TOKEN, ctx.subUrl);
+        hideLoading();
+        showMain();
+      })
+      .catch(function (err) {
+        infoError = err;
+        hideLoading();
+        if (!hasCache) {
+          $('main').classList.remove('visible');
+          showLogin();
+          var msg = (infoError && infoError.message) || 'خطا در دریافت اطلاعات';
+          if (window.location.protocol === 'file:') {
+            msg += ' — فایل را روی همان دامنه پنل میزبانی کنید.';
+          }
+          setError(msg);
+        }
+      });
+
+    var linksPromise = withTimeout(fetchLinks(ctx), 8000, 'Links timeout')
+      .then(function (links) {
+        pageData.links = links || [];
+        renderConnections(ctx.subUrl, pageData.links);
+      })
+      .catch(function () { return []; });
+
+    var appsPromise = withTimeout(fetchApps(ctx), 8000, 'Apps timeout')
+      .then(function (apps) {
+        pageData.apps = apps || [];
+        renderApps(pageData.apps);
+      })
+      .catch(function () { return []; });
+
+    Promise.all([infoPromise, linksPromise, appsPromise])
+      .then(function () {
+        if (pageData.user) {
+          writePageCache(ctx, pageData);
+        }
+      });
+  }
+
+  function startFromForm() {
+    var ctx = resolveContext($('panel-url').value, $('sub-token').value);
+    if (!ctx) { setError('لینک یا توکن معتبر نیست.'); return; }
+    loadAll(ctx);
+  }
+
+  $('btn-load').addEventListener('click', startFromForm);
+  $('sub-token').addEventListener('keydown', function (e) { if (e.key === 'Enter') startFromForm(); });
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setActiveTab(btn.getAttribute('data-tab'));
+    });
+  });
+  $('qr-close').addEventListener('click', closeQrModal);
+  $('qr-modal').addEventListener('click', function (e) {
+    if (e.target === $('qr-modal')) closeQrModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('qr-modal').classList.contains('show')) closeQrModal();
+  });
+
+  (function init() {
+    var savedPanel = localStorage.getItem(LS_PANEL);
+    var savedToken = localStorage.getItem(LS_TOKEN);
+    if (savedPanel) $('panel-url').value = savedPanel;
+    if (savedToken) $('sub-token').value = savedToken;
+
+    var auto = detectFromCurrentUrl();
+    if (auto) {
+      $('panel-url').value = auto.panel;
+      $('sub-token').value = auto.subUrl;
+      loadAll(auto);
+      return;
+    }
+    if (savedPanel && savedToken) {
+      var ctx = resolveContext(savedPanel, savedToken);
+      if (ctx) loadAll(ctx);
+    }
+  })();
+})();
+  </script>
+</body>
+</html>
