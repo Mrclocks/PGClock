@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -1146,12 +1146,12 @@
 
   function tokenFromUrlObject(u) {
     var parts = u.pathname.split('/').filter(Boolean);
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].toLowerCase() === 'sub' && parts[i + 1]) {
-        return { token: cleanToken(parts[i + 1]) };
-      }
-    }
 
+    if (parts.length) {
+      return {
+        token: cleanToken(parts[parts.length - 1])
+    };
+  }
     var keys = ['token', 'sub', 'sub_token', 'subscription', 'subscription_token'];
     for (var k = 0; k < keys.length; k++) {
       var found = u.searchParams.get(keys[k]);
