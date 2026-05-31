@@ -270,6 +270,155 @@
       text-align: right;
     }
 
+    .usage-card {
+      padding: var(--pad-y) var(--pad-x);
+      margin-bottom: 12px;
+    }
+    .usage-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .usage-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .usage-total {
+      min-height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 9px;
+      border-radius: var(--r-pill);
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: #f5f5f7;
+      font-size: 11px;
+      font-weight: 700;
+      direction: rtl;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .usage-ranges {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .usage-range {
+      min-height: 40px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: var(--fill);
+      border: 0.5px solid var(--glass-stroke-soft);
+      color: var(--text-secondary);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, transform 0.12s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .usage-range.active {
+      background: rgba(32, 164, 255, 0.32);
+      border-color: rgba(32, 164, 255, 0.4);
+      color: #dff3ff;
+    }
+    .usage-range:active { transform: scale(0.97); }
+    .usage-chart-wrap {
+      position: relative;
+      z-index: 1;
+      min-height: 210px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025));
+      border: 0.5px solid var(--glass-stroke-soft);
+      overflow: hidden;
+    }
+    .usage-bars {
+      display: grid;
+      grid-template-columns: repeat(var(--bar-count), minmax(0, 1fr));
+      align-items: end;
+      gap: 8px;
+      min-height: 210px;
+      padding: 16px 12px;
+      direction: ltr;
+    }
+    .usage-bar-item {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 8px;
+      height: 100%;
+    }
+    .usage-bar {
+      position: relative;
+      min-height: 110px;
+      border-radius: 14px;
+      background: var(--fill);
+      border: 0.5px solid var(--glass-stroke-soft);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+    .usage-bar-fill {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      min-height: 28%;
+      height: var(--bar-h);
+      border-radius: inherit;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
+        linear-gradient(180deg, rgba(32,164,255,0.92), rgba(32,164,255,0.22));
+      border: 0.5px solid rgba(32,164,255,0.38);
+    }
+    .usage-bar-value {
+      position: absolute;
+      inset: 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: 0.09em;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      direction: ltr;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.45);
+      white-space: nowrap;
+      z-index: 1;
+    }
+    .usage-bar-time {
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .usage-empty {
+      min-height: 210px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
     .conn-row {
       display: flex;
       align-items: center;
@@ -658,11 +807,17 @@
     .announce {
       position: relative;
       overflow: hidden;
-      padding: var(--pad-y) var(--pad-x);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-height: 57px;
+      padding: 0 var(--pad-x);
       margin-bottom: 12px;
       font-size: 13px;
       font-weight: 700;
-      line-height: 1.6;
+      line-height: 1.45;
       text-align: center;
       white-space: pre-wrap;
       color: #fff7e8;
@@ -688,10 +843,15 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      width: 100%;
+      min-height: 57px;
+      padding: 8px 0;
+      box-sizing: border-box;
       max-width: 100%;
       text-align: center;
       font-weight: 700;
       vertical-align: middle;
+      transform: translateY(1px);
     }
     .announce-dot {
       flex: 0 0 auto;
@@ -702,7 +862,12 @@
       box-shadow: 0 0 0 0 rgba(255, 138, 0, 0.6);
       animation: announcePulse 1.6s ease-out infinite;
     }
-    .announce-text { min-width: 0; }
+    .announce-text {
+      min-width: 0;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     @keyframes announcePulse {
       70% { box-shadow: 0 0 0 8px rgba(255, 138, 0, 0); }
       100% { box-shadow: 0 0 0 0 rgba(255, 138, 0, 0); }
@@ -816,7 +981,7 @@
       <label class="field-label" for="panel-url">آدرس پنل</label>
       <input class="field" id="panel-url" type="url" placeholder="https://panel.example.com" autocomplete="off">
       <label class="field-label" for="sub-token">لینک یا توکن</label>
-      <input class="field" id="sub-token" type="text" placeholder="https://…/sub/…" autocomplete="off">
+      <input class="field" id="sub-token" type="text" placeholder="https://…/…" autocomplete="off">
       <button type="button" class="btn-primary" id="btn-load">ادامه</button>
     </div>
 
@@ -870,6 +1035,20 @@
         </div>
       </section>
 
+      <section class="glass usage-card">
+        <div class="usage-head">
+          <h2 class="usage-title">نمودار مصرف</h2>
+          <span class="usage-total" id="usage-total">—</span>
+        </div>
+        <div class="usage-ranges" role="tablist" aria-label="بازه نمودار مصرف">
+          <button type="button" class="usage-range active" data-range="1d">۱ روز</button>
+          <button type="button" class="usage-range" data-range="7d">۱ هفته</button>
+        </div>
+        <div class="usage-chart-wrap" id="usage-chart">
+          <div class="usage-empty">در حال دریافت نمودار مصرف</div>
+        </div>
+      </section>
+
       <div class="tabs-shell" id="content-tabs">
         <div class="tab-switcher" role="tablist" aria-label="محتوای اشتراک">
           <button type="button" class="tab-btn active" data-tab="apps" role="tab" aria-selected="true" aria-controls="apps-panel">اپلیکیشن‌ها</button>
@@ -906,6 +1085,8 @@
   var LS_PANEL = 'pg_panel_url';
   var LS_TOKEN = 'pg_sub_token';
   var LS_PAGE_PREFIX = 'pg_page_cache:';
+  var CACHE_TTL_MS = 10 * 60 * 1000;
+  var CACHE_MAX_ENTRIES = 12;
   var toastTimer;
 
   function $(id) { return document.getElementById(id); }
@@ -1054,13 +1235,46 @@
   }
 
   function cacheKey(ctx) {
-    return LS_PAGE_PREFIX + ctx.subUrl;
+    var hash = 5381;
+    for (var i = 0; i < ctx.subUrl.length; i++) {
+      hash = ((hash << 5) + hash) ^ ctx.subUrl.charCodeAt(i);
+    }
+    return LS_PAGE_PREFIX + (hash >>> 0).toString(36);
+  }
+
+  function cleanupPageCache() {
+    try {
+      var now = Date.now();
+      var items = [];
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var key = localStorage.key(i);
+        if (!key || key.indexOf(LS_PAGE_PREFIX) !== 0) continue;
+        var raw = localStorage.getItem(key);
+        var savedAt = 0;
+        try { savedAt = JSON.parse(raw || '{}').savedAt || 0; } catch (e) {}
+        if (!savedAt || now - savedAt > CACHE_TTL_MS) {
+          localStorage.removeItem(key);
+        } else {
+          items.push({ key: key, savedAt: savedAt });
+        }
+      }
+      items.sort(function (a, b) { return b.savedAt - a.savedAt; });
+      items.slice(CACHE_MAX_ENTRIES).forEach(function (item) {
+        localStorage.removeItem(item.key);
+      });
+    } catch (e) {}
   }
 
   function readPageCache(ctx) {
     try {
       var raw = localStorage.getItem(cacheKey(ctx));
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || data.subUrl !== ctx.subUrl || !data.savedAt || Date.now() - data.savedAt > CACHE_TTL_MS) {
+        localStorage.removeItem(cacheKey(ctx));
+        return null;
+      }
+      return data;
     } catch (e) {
       return null;
     }
@@ -1070,34 +1284,31 @@
     try {
       localStorage.setItem(cacheKey(ctx), JSON.stringify({
         savedAt: Date.now(),
+        subUrl: ctx.subUrl,
         user: data.user,
         headers: data.headers || {},
         links: data.links || [],
         apps: data.apps || []
       }));
+      cleanupPageCache();
     } catch (e) {}
   }
 
-  function withTimeout(promise, ms, message) {
-    return new Promise(function (resolve, reject) {
-      var done = false;
-      var timer = setTimeout(function () {
-        if (done) return;
-        done = true;
-        reject(new Error(message || 'Request timeout'));
-      }, ms);
-
-      promise.then(function (value) {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        resolve(value);
-      }).catch(function (err) {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        reject(err);
-      });
+  function fetchWithTimeout(url, options, ms, message) {
+    options = options || {};
+    if (!window.AbortController) {
+      return fetch(url, options);
+    }
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, ms);
+    options.signal = controller.signal;
+    return fetch(url, options).then(function (res) {
+      clearTimeout(timer);
+      return res;
+    }).catch(function (err) {
+      clearTimeout(timer);
+      if (err && err.name === 'AbortError') throw new Error(message || 'Request timeout');
+      throw err;
     });
   }
 
@@ -1145,23 +1356,34 @@
   }
 
   function tokenFromUrlObject(u) {
-    var parts = u.pathname.split('/').filter(Boolean);
-
-    if (parts.length) {
-      return {
-        token: cleanToken(parts[parts.length - 1])
-    };
-  }
     var keys = ['token', 'sub', 'sub_token', 'subscription', 'subscription_token'];
-    for (var k = 0; k < keys.length; k++) {
-      var found = u.searchParams.get(keys[k]);
+    for (var i = 0; i < keys.length; i++) {
+      var found = u.searchParams.get(keys[i]);
       if (found) {
         var nested = parseTokenInput(found);
         if (nested && nested.token) return nested;
         return { token: cleanToken(found) };
       }
     }
-    return null;
+
+    if (!/^https?:$/i.test(u.protocol)) return null;
+
+    var subPath = u.pathname.replace(/\/+$/, '').replace(/\/(?:info|apps|links)$/i, '');
+    var parts = subPath.split('/').filter(Boolean);
+    var token = parts.length ? cleanToken(parts[parts.length - 1]) : '';
+    if (!token || /\.(?:html?|php)$/i.test(token)) return null;
+
+    return { token: token, subPath: subPath || ('/' + encodeURIComponent(token)) };
+  }
+
+  function parsePathInput(raw) {
+    var path = String(raw || '').trim();
+    if (path.charAt(0) !== '/') path = '/' + path;
+    path = path.split(/[?#]/)[0].replace(/\/+$/, '').replace(/\/(?:info|apps|links)$/i, '');
+    var parts = path.split('/').filter(Boolean);
+    var token = parts.length ? cleanToken(parts[parts.length - 1]) : '';
+    if (!token || /\.(?:html?|php)$/i.test(token)) return null;
+    return { token: token, subPath: path };
   }
 
   function parseTokenInput(raw) {
@@ -1175,26 +1397,43 @@
         if (parsedUrl && parsedUrl.token) {
           var panelParam = u.searchParams.get('panel') || u.searchParams.get('panel_url') || u.searchParams.get('base_url');
           var panel = parsedUrl.panel || panelParam || (/^https?:$/i.test(u.protocol) ? u.origin : '');
-          return { panel: panel, token: parsedUrl.token };
+          return { panel: panel, token: parsedUrl.token, subPath: parsedUrl.subPath };
         }
         var hashParsed = parseTokenInput(u.hash.replace(/^#/, ''));
         if (hashParsed && hashParsed.token) {
-          return { panel: hashParsed.panel || (/^https?:$/i.test(u.protocol) ? u.origin : ''), token: hashParsed.token };
+          return { panel: hashParsed.panel || (/^https?:$/i.test(u.protocol) ? u.origin : ''), token: hashParsed.token, subPath: hashParsed.subPath };
         }
       }
     } catch (e) {}
 
+    if (/^[^/?#\s]+\.[^/?#\s]+(?:[/?#].*)?$/i.test(raw)) {
+      try {
+        var looseUrl = new URL('https://' + raw);
+        var looseParsed = tokenFromUrlObject(looseUrl);
+        if (looseParsed && looseParsed.token) {
+          return { panel: looseUrl.origin, token: looseParsed.token, subPath: looseParsed.subPath };
+        }
+      } catch (e) {}
+    }
+
     var panelMatch = raw.match(/^(https?:\/\/[^/?#\s]+)/i);
     var pathMatch = raw.match(/(?:^|[/?#&\s])sub\/([^/?#&\s]+)/i);
     if (pathMatch) {
+      var pathToken = cleanToken(pathMatch[1]);
       return {
         panel: panelMatch ? panelMatch[1] : undefined,
-        token: cleanToken(pathMatch[1])
+        token: pathToken,
+        subPath: '/sub/' + encodeURIComponent(pathToken)
       };
     }
 
     var queryMatch = raw.match(/(?:^|[?&#])(?:token|sub|sub_token|subscription|subscription_token)=([^&#\s]+)/i);
     if (queryMatch) return { panel: panelMatch ? panelMatch[1] : undefined, token: cleanToken(queryMatch[1]) };
+
+    if (raw.indexOf('/') > -1 && raw.indexOf('://') === -1 && !/\s/.test(raw)) {
+      var pathParsed = parsePathInput(raw);
+      if (pathParsed) return pathParsed;
+    }
 
     if (!/\s/.test(raw) && raw.indexOf('://') === -1 && raw.indexOf('/') === -1 && raw.indexOf('?') === -1 && raw.indexOf('#') === -1) {
       return { token: cleanToken(raw) };
@@ -1203,7 +1442,7 @@
   }
 
   function resolveContext(panelInput, tokenInput) {
-    var parsed = parseTokenInput(tokenInput);
+    var parsed = tokenInput && typeof tokenInput === 'object' ? tokenInput : parseTokenInput(tokenInput);
     if (!parsed) return null;
     var panel = (parsed.panel || panelInput || '').trim().replace(/\/+$/, '');
     if (panel && panel !== 'null' && !/^https?:\/\//i.test(panel)) panel = 'https://' + panel;
@@ -1213,22 +1452,25 @@
     }
     if (!panel || panel === 'null') return null;
     if (!parsed.token) return null;
-    var subPath = '/sub/' + encodeURIComponent(parsed.token);
+    var subPath = parsed.subPath || ('/sub/' + encodeURIComponent(parsed.token));
+    if (subPath.charAt(0) !== '/') subPath = '/' + subPath;
+    subPath = subPath.replace(/\/+$/, '');
     return {
       panel: panel, token: parsed.token, subPath: subPath,
       subUrl: panel + subPath,
       infoUrl: panel + subPath + '/info',
       appsUrl: panel + subPath + '/apps',
-      linksUrl: panel + subPath + '/links'
+      linksUrl: panel + subPath + '/links',
+      usageUrl: panel + subPath + '/usage'
     };
   }
 
   function detectFromCurrentUrl() {
     var fromHref = parseTokenInput(window.location.href);
-    if (fromHref && fromHref.token) return resolveContext(fromHref.panel || '', fromHref.token);
+    if (fromHref && fromHref.token) return resolveContext(fromHref.panel || '', fromHref);
 
     var fromHash = parseTokenInput(window.location.hash.replace(/^#/, ''));
-    if (fromHash && fromHash.token) return resolveContext(fromHash.panel || '', fromHash.token);
+    if (fromHash && fromHash.token) return resolveContext(fromHash.panel || '', fromHash);
 
     var params = new URLSearchParams(window.location.search);
     var panelParam = params.get('panel') || params.get('panel_url') || params.get('base_url') || window.location.origin;
@@ -1268,12 +1510,12 @@
   }
 
   function fetchInfo(ctx) {
-    return fetch(ctx.infoUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    return fetchWithTimeout(ctx.infoUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } }, 10000, 'خطا در دریافت اطلاعات')
       .then(function (res) {
         if (!res.ok) throw new Error('خطا در دریافت اطلاعات (' + res.status + ')');
         return res.json().then(function (data) {
           var headers = {};
-          ['announce', 'announce-url', 'support-url'].forEach(function (h) {
+          ['announce', 'announce-url'].forEach(function (h) {
             var v = res.headers.get(h);
             if (v) headers[h] = v;
           });
@@ -1283,13 +1525,13 @@
   }
 
   function fetchApps(ctx) {
-    return fetch(ctx.appsUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    return fetchWithTimeout(ctx.appsUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } }, 8000, 'Apps timeout')
       .then(function (res) { return res.ok ? res.json() : []; })
       .catch(function () { return []; });
   }
 
   function fetchLinks(ctx) {
-    return fetch(ctx.linksUrl, { credentials: 'same-origin' })
+    return fetchWithTimeout(ctx.linksUrl, { credentials: 'same-origin' }, 8000, 'Links timeout')
       .then(function (res) {
         if (!res.ok) return [];
         return res.text().then(function (text) {
@@ -1299,6 +1541,147 @@
         });
       })
       .catch(function () { return []; });
+  }
+
+  var usageCtx = null;
+  var usageRange = '1d';
+  var usageRequestId = 0;
+  var USAGE_RANGES = {
+    '1d': { period: 'hour', hours: 24 },
+    '7d': { period: 'day', days: 7 }
+  };
+
+  function usageRangeUrl(ctx, range) {
+    var meta = USAGE_RANGES[range] || USAGE_RANGES['1d'];
+    var end = new Date();
+    var start = new Date(end.getTime() - (meta.hours ? meta.hours * 3600000 : meta.days * 86400000));
+    return ctx.usageUrl +
+      '?period=' + encodeURIComponent(meta.period) +
+      '&start=' + encodeURIComponent(start.toISOString()) +
+      '&end=' + encodeURIComponent(end.toISOString());
+  }
+
+  function fetchUsage(ctx, range) {
+    return fetchWithTimeout(usageRangeUrl(ctx, range), { credentials: 'same-origin', headers: { Accept: 'application/json' } }, 7000, 'Usage timeout')
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  function normalizeUsage(data) {
+    var stats = data && data.stats;
+    var points = {};
+    function add(item) {
+      if (!item || !item.period_start) return;
+      var value = Number(item.total_traffic || 0);
+      if (!isFinite(value)) value = 0;
+      points[item.period_start] = (points[item.period_start] || 0) + value;
+    }
+    if (Array.isArray(stats)) {
+      stats.forEach(add);
+    } else if (stats && typeof stats === 'object') {
+      Object.keys(stats).forEach(function (key) {
+        var list = stats[key];
+        if (Array.isArray(list)) list.forEach(add);
+      });
+    }
+    return Object.keys(points).sort().map(function (time) {
+      return { time: time, value: points[time] };
+    });
+  }
+
+  function tehranHourLabel(index, count) {
+    var date = new Date(Date.now() - Math.max(0, count - 1 - index) * 3 * 3600000);
+    if (isNaN(date.getTime())) return '';
+    try {
+      var hour = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Tehran',
+        hour: '2-digit',
+        hour12: false
+      }).format(date);
+      hour = parseInt(hour, 10);
+      if (hour === 24) hour = 0;
+      return toPersianDigits(hour);
+    } catch (e) {
+      return date.toLocaleTimeString('fa-IR', { hour: 'numeric' }).replace(/:.*$/, '');
+    }
+  }
+
+  function tehranWeekdayLabel(index, count) {
+    var date = new Date(Date.now() - Math.max(0, count - 1 - index) * 86400000);
+    try {
+      return new Intl.DateTimeFormat('fa-IR', {
+        timeZone: 'Asia/Tehran',
+        weekday: 'short'
+      }).format(date);
+    } catch (e) {
+      return date.toLocaleDateString('fa-IR', { weekday: 'short' });
+    }
+  }
+
+  function usageTickLabel(range, index, count) {
+    return range === '1d' ? tehranHourLabel(index, count) : tehranWeekdayLabel(index, count);
+  }
+
+  function formatUsageValue(value) {
+    if (!value) return '۰G';
+    var gb = value / 1073741824;
+    var text = gb < 1 ? gb.toFixed(2) : (gb < 10 ? gb.toFixed(1) : String(Math.round(gb)));
+    text = text.replace(/\.0$/, '');
+    return toPersianDigits(text) + 'G';
+  }
+
+  function bucketUsage(items, range) {
+    var size = range === '1d' ? 3 : 1;
+    var out = [];
+    for (var i = 0; i < items.length; i += size) {
+      var slice = items.slice(i, i + size);
+      var total = slice.reduce(function (sum, item) { return sum + item.value; }, 0);
+      out.push({ value: total });
+    }
+    return out;
+  }
+
+  function renderUsageChart(items, range) {
+    var chart = $('usage-chart');
+    if (!items.length) {
+      $('usage-total').textContent = '—';
+      chart.innerHTML = '<div class="usage-empty">آماری برای نمایش نیست</div>';
+      return;
+    }
+
+    var bars = bucketUsage(items, range);
+    var max = Math.max.apply(null, bars.map(function (p) { return p.value; })) || 1;
+    var total = bars.reduce(function (sum, p) { return sum + p.value; }, 0);
+    $('usage-total').textContent = formatBytes(total);
+    chart.innerHTML = '<div class="usage-bars" style="--bar-count:' + bars.length + '">' + bars.map(function (bar, idx) {
+      var height = Math.max(28, Math.round(bar.value / max * 100));
+      return '<div class="usage-bar-item">' +
+        '<div class="usage-bar" title="' + escapeAttr(formatBytes(bar.value)) + '">' +
+          '<div class="usage-bar-fill" style="--bar-h:' + height + '%"></div>' +
+          '<span class="usage-bar-value">' + escapeHtml(formatUsageValue(bar.value)) + '</span>' +
+        '</div>' +
+        '<span class="usage-bar-time">' + escapeHtml(usageTickLabel(range, idx, bars.length)) + '</span>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderUsageLoading() {
+    $('usage-total').textContent = '—';
+    $('usage-chart').innerHTML = '<div class="usage-empty">در حال دریافت نمودار مصرف</div>';
+  }
+
+  function loadUsage(range) {
+    if (!usageCtx) return;
+    usageRange = range || usageRange;
+    document.querySelectorAll('.usage-range').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-range') === usageRange);
+    });
+    var requestId = ++usageRequestId;
+    renderUsageLoading();
+    fetchUsage(usageCtx, usageRange).then(function (data) {
+      if (requestId !== usageRequestId) return;
+      renderUsageChart(normalizeUsage(data), usageRange);
+    });
   }
 
   function escapeHtml(s) {
@@ -1670,6 +2053,10 @@
 
   function loadAll(ctx) {
     setError('');
+    usageCtx = ctx;
+    usageRange = '1d';
+    renderUsageLoading();
+    loadUsage(usageRange);
     var cached = readPageCache(ctx);
     var hasCache = cached && cached.user;
 
@@ -1696,7 +2083,7 @@
     };
     var infoError = null;
 
-    var infoPromise = withTimeout(fetchInfo(ctx), 10000, 'خطا در دریافت اطلاعات')
+    var infoPromise = fetchInfo(ctx)
       .then(function (infoResult) {
         pageData.user = infoResult.data;
         pageData.headers = infoResult.headers || {};
@@ -1721,14 +2108,14 @@
         }
       });
 
-    var linksPromise = withTimeout(fetchLinks(ctx), 8000, 'Links timeout')
+    var linksPromise = fetchLinks(ctx)
       .then(function (links) {
         pageData.links = links || [];
         renderConnections(ctx.subUrl, pageData.links);
       })
       .catch(function () { return []; });
 
-    var appsPromise = withTimeout(fetchApps(ctx), 8000, 'Apps timeout')
+    var appsPromise = fetchApps(ctx)
       .then(function (apps) {
         pageData.apps = apps || [];
         renderApps(pageData.apps);
@@ -1756,6 +2143,11 @@
       setActiveTab(btn.getAttribute('data-tab'));
     });
   });
+  document.querySelectorAll('.usage-range').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      loadUsage(btn.getAttribute('data-range'));
+    });
+  });
   $('qr-close').addEventListener('click', closeQrModal);
   $('qr-modal').addEventListener('click', function (e) {
     if (e.target === $('qr-modal')) closeQrModal();
@@ -1765,6 +2157,7 @@
   });
 
   (function init() {
+    cleanupPageCache();
     var savedPanel = localStorage.getItem(LS_PANEL);
     var savedToken = localStorage.getItem(LS_TOKEN);
     if (savedPanel) $('panel-url').value = savedPanel;
