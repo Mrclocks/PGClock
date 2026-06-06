@@ -190,21 +190,6 @@
       gap: 14px;
       margin-bottom: 18px;
     }
-    .avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      background: linear-gradient(145deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06));
-      border: 0.5px solid var(--glass-stroke);
-      box-shadow: inset 0 1px 0 var(--specular);
-    }
     .profile-id { flex: 1; min-width: 0; }
     .profile-id .label {
       font-size: 13px;
@@ -241,6 +226,35 @@
     .status-pill.disabled { background: var(--fill); color: var(--text-secondary); border-color: var(--glass-stroke-soft); }
     .status-pill.on_hold { background: rgba(191, 90, 242, 0.22); color: #e9d5ff; border-color: rgba(191, 90, 242, 0.4); }
 
+    .profile-alert {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      margin: -6px 0 12px;
+      padding: 10px 12px;
+      border-radius: var(--r-lg);
+      border: 0.5px solid var(--glass-stroke-soft);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-align: center;
+      overflow: hidden;
+    }
+    .profile-alert.warn {
+      color: #fcd34d;
+      background: rgba(255, 159, 10, 0.14);
+      border-color: rgba(255, 159, 10, 0.38);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 28px rgba(255, 159, 10, 0.08);
+    }
+    .profile-alert.danger {
+      color: #ffb4b0;
+      background: rgba(255, 69, 58, 0.16);
+      border-color: rgba(255, 69, 58, 0.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 28px rgba(255, 69, 58, 0.1);
+    }
     .info-grid,
     .traffic-grid {
       display: grid;
@@ -255,6 +269,20 @@
       background: var(--fill);
       border: 0.5px solid var(--glass-stroke-soft);
     }
+    .info-cell.alert-warn {
+      background: rgba(255, 159, 10, 0.14);
+      border-color: rgba(255, 159, 10, 0.42);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .info-cell.alert-danger {
+      background: rgba(255, 69, 58, 0.16);
+      border-color: rgba(255, 69, 58, 0.48);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .info-cell.alert-warn .k,
+    .info-cell.alert-warn .v { color: #fcd34d; }
+    .info-cell.alert-danger .k,
+    .info-cell.alert-danger .v { color: #ffb4b0; }
     .info-cell .k {
       display: block;
       font-size: 12px;
@@ -304,6 +332,17 @@
       direction: rtl;
       text-align: right;
       white-space: nowrap;
+    }
+    .profile-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .device-limit-pill {
+      min-height: 28px;
+      padding: 0 12px;
+      flex-shrink: 0;
     }
     .usage-ranges {
       position: relative;
@@ -458,7 +497,9 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .btn-copy {
+    .btn-copy,
+    .btn-qr,
+    .btn-download {
       flex-shrink: 0;
       width: 44px;
       height: 44px;
@@ -475,8 +516,12 @@
       -webkit-appearance: none;
       appearance: none;
     }
-    .btn-copy svg { width: 20px; height: 20px; }
-    .btn-copy:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.12); }
+    .btn-copy svg,
+    .btn-qr svg,
+    .btn-download svg { width: 20px; height: 20px; }
+    .btn-copy:active,
+    .btn-qr:active,
+    .btn-download:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.12); }
     .btn-copy.copied { color: var(--green); background: rgba(48, 209, 88, 0.18); border-color: rgba(48, 209, 88, 0.35); }
     .row-actions {
       display: flex;
@@ -484,26 +529,6 @@
       gap: 8px;
       flex-shrink: 0;
     }
-    .btn-qr {
-      flex-shrink: 0;
-      width: 44px;
-      height: 44px;
-      border: none;
-      border-radius: 12px;
-      background: var(--fill-thick);
-      border: 0.5px solid var(--glass-stroke-soft);
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s, transform 0.12s, color 0.15s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    .btn-qr svg { width: 20px; height: 20px; }
-    .btn-qr:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.12); }
-
     .tabs-shell {
       margin-bottom: 12px;
     }
@@ -522,6 +547,9 @@
       -webkit-backdrop-filter: blur(24px) saturate(180%);
       border: 0.5px solid var(--glass-stroke-soft);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 10px 26px rgba(0, 0, 0, 0.18);
+    }
+    .tabs-shell.configs-only .tab-switcher {
+      display: none;
     }
     .tab-btn {
       flex: 1;
@@ -555,14 +583,6 @@
     .tab-panel.active {
       display: block;
     }
-    .empty-state {
-      padding: var(--pad-y) var(--pad-x);
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 14px;
-      font-weight: 600;
-    }
-
     .platform-list {
       display: flex;
       flex-direction: column;
@@ -691,14 +711,54 @@
     .platform-accordion.open .platform-content {
       display: block;
     }
-    .platform-apps .app-card:first-child {
-      border-top: none;
-    }
     .app-card {
       padding: var(--pad-y) var(--pad-x);
       border-top: 0.5px solid var(--glass-stroke-soft);
     }
     .app-card:first-child { border-top: none; }
+    .app-card .app-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .app-card .app-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      line-height: 0;
+      color: var(--text);
+      background: var(--fill-thick);
+      border: 0.5px solid var(--glass-stroke-soft);
+    }
+    .app-card .app-icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .app-card .app-icon svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+    .app-card .app-icon .app-icon-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .app-card .app-icon img + .app-icon-fallback {
+      display: none;
+    }
+    .app-card .app-info {
+      flex: 1;
+      min-width: 0;
+    }
     .app-card .app-head {
       display: flex;
       align-items: center;
@@ -707,14 +767,23 @@
       margin-bottom: 10px;
     }
     .app-card .app-title-line {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
+      flex: 1;
       min-width: 0;
     }
-    .app-card .app-name { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+    .app-card .app-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
     .app-card .app-desc {
-      margin: -2px 0 12px;
+      margin: -2px 0 0;
       font-size: 13px;
       line-height: 1.5;
       color: var(--text-secondary);
@@ -976,7 +1045,7 @@
   </div>
 
   <div class="page">
-    <div id="login-card" class="glass login-sheet">
+    <div id="login-card" class="glass login-sheet hidden">
       <h1>اشتراک</h1>
       <label class="field-label" for="panel-url">آدرس پنل</label>
       <input class="field" id="panel-url" type="url" placeholder="https://panel.example.com" autocomplete="off">
@@ -987,7 +1056,7 @@
 
     <div id="error" class="banner-error hidden"></div>
 
-    <div id="page-loading" class="page-loading hidden" role="status" aria-live="polite" aria-busy="true">
+    <div id="page-loading" class="page-loading" role="status" aria-live="polite" aria-busy="true">
       <span class="loading-text">در حال دریافت اطلاعات</span>
     </div>
 
@@ -996,16 +1065,22 @@
 
       <section class="glass profile">
         <div class="profile-head">
-          <div class="avatar" id="avatar-letter">?</div>
           <div class="profile-id">
-            <p class="label">حساب کاربری</p>
+            <p class="label">نام کاربری</p>
             <h1 class="name" id="f-username">—</h1>
           </div>
-          <span class="status-pill active" id="f-status">—</span>
+          <div class="profile-badges">
+            <span class="usage-total device-limit-pill" id="f-hwid-limit">—</span>
+            <span class="status-pill active" id="f-status">—</span>
+          </div>
+        </div>
+
+        <div class="profile-alert hidden" id="profile-alert" role="status" aria-live="polite">
+          <span id="profile-alert-text">—</span>
         </div>
 
         <div class="info-grid">
-          <div class="info-cell">
+          <div class="info-cell" id="cell-expire">
             <span class="k">انقضا</span>
             <span class="v" id="f-expire">—</span>
           </div>
@@ -1028,7 +1103,7 @@
             <span class="k">حجم کل</span>
             <span class="v" id="f-limit">—</span>
           </div>
-          <div class="info-cell">
+          <div class="info-cell" id="cell-remain">
             <span class="k">باقیمانده</span>
             <span class="v" id="f-remain">—</span>
           </div>
@@ -1110,6 +1185,7 @@
   var SVG_STACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
   var SVG_NETWORK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.3 2.5 3.5 5.5 3.5 9S14.3 18.5 12 21"/><path d="M12 3C9.7 5.5 8.5 8.5 8.5 12S9.7 18.5 12 21"/></svg>';
   var SVG_QR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M14 14h2v2h-2z"/><path d="M18 14h2v2h-2z"/><path d="M14 18h2v2h-2z"/><path d="M18 18h2v2h-2z"/></svg>';
+  var SVG_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
   var SVG_APPLE = '<svg viewBox="5 3 16 17" fill="currentColor" aria-hidden="true"><path d="M16.9 12.1c0-1.8 1.5-2.7 1.6-2.8-.9-1.2-2.2-1.4-2.6-1.4-1.1-.1-2.1.6-2.7.6-.6 0-1.4-.6-2.3-.6-1.2 0-2.4.7-3 1.8-1.3 2.2-.3 5.5.9 7.3.6.9 1.4 1.9 2.4 1.9.9 0 1.3-.6 2.4-.6s1.4.6 2.4.6 1.7-.9 2.3-1.8c.7-1 1-2.1 1-2.1-.1 0-2.4-.9-2.4-2.9zM15.2 6.7c.5-.6.8-1.4.8-2.2-.8 0-1.6.5-2.1 1.1-.5.5-.9 1.3-.8 2.1.8.1 1.6-.4 2.1-1z"/></svg>';
   var SVG_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
   var SVG_ANDROID = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10h10v7a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-7z"/><path d="M8.5 10a3.5 3.5 0 0 1 7 0"/><path d="M8.5 6.5 7 4.5"/><path d="M15.5 6.5 17 4.5"/><path d="M10 14h.01"/><path d="M14 14h.01"/><path d="M5 12v4"/><path d="M19 12v4"/></svg>';
@@ -1131,11 +1207,11 @@
   function protocolSvg(type) {
     var map = {
       vless: 'tint-blue',
-      vmess: 'tint-purple',
-      trojan: 'tint-orange',
-      wireguard: 'tint-green',
-      hysteria: 'tint-orange',
-      shadowsocks: 'tint-green',
+      vmess: 'tint-blue',
+      trojan: 'tint-blue',
+      wireguard: 'tint-blue',
+      hysteria: 'tint-blue',
+      shadowsocks: 'tint-blue',
       proxy: ''
     };
     return { tint: map[type] || '', svg: SVG_NETWORK };
@@ -1149,8 +1225,12 @@
     return '<button type="button" class="btn-qr" aria-label="نمایش QR">' + SVG_QR + '</button>';
   }
 
-  function actionBtnsHtml() {
-    return '<span class="row-actions">' + qrBtnHtml() + copyBtnHtml() + '</span>';
+  function downloadBtnHtml() {
+    return '<button type="button" class="btn-download" aria-label="دانلود کانفیگ">' + SVG_DOWNLOAD + '</button>';
+  }
+
+  function actionBtnsHtml(canDownload) {
+    return '<span class="row-actions">' + (canDownload ? downloadBtnHtml() : '') + qrBtnHtml() + copyBtnHtml() + '</span>';
   }
 
   var qrLibPromise = null;
@@ -1342,6 +1422,14 @@
     } catch (e) { return String(v); }
   }
 
+  function formatDeviceLimit(value) {
+    if (value == null || value === '') return '—';
+    var n = Number(value);
+    if (!isFinite(n)) return String(value);
+    if (n <= 0) return 'بدون محدودیت';
+    return toPersianDigits(n) + ' دستگاه';
+  }
+
   function normalizeStatus(s) {
     if (!s) return 'active';
     if (typeof s === 'object' && s.name) return String(s.name).toLowerCase();
@@ -1507,6 +1595,95 @@
       catch (e) { reject(e); }
       document.body.removeChild(ta);
     });
+  }
+
+  function firstParam(params, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var values = params.getAll(keys[i]).filter(Boolean);
+      if (values.length) return values.join(', ');
+    }
+    return '';
+  }
+
+  function decodeUrlValue(value) {
+    try { return decodeURIComponent(String(value || '')); }
+    catch (e) { return String(value || ''); }
+  }
+
+  function normalizeWireGuardKey(value) {
+    return String(value || '').replace(/\s/g, '+');
+  }
+
+  function decodeWireGuardPayload(raw) {
+    var payload = String(raw || '').replace(/^wireguard:\/\//i, '').split('#')[0].split('?')[0].replace(/^\/+/, '');
+    payload = decodeUrlValue(payload);
+    if (payload.indexOf('[Interface]') >= 0) return payload;
+
+    var decoded = decodeBase64Utf8(payload);
+    if (decoded && decoded.indexOf('[Interface]') >= 0) return decoded;
+    return '';
+  }
+
+  function wireGuardConf(raw) {
+    raw = String(raw || '').trim();
+    if (!raw) return '';
+    if (/^\[Interface\]/i.test(raw)) return raw;
+
+    var decoded = decodeWireGuardPayload(raw);
+    if (decoded) return decoded;
+
+    try {
+      var url = new URL(raw);
+      var params = url.searchParams;
+      var privateKey = normalizeWireGuardKey(decodeUrlValue(url.username || firstParam(params, ['privatekey', 'privateKey', 'private_key'])));
+      var publicKey = normalizeWireGuardKey(firstParam(params, ['publickey', 'publicKey', 'public_key', 'peerpublickey', 'peerPublicKey', 'peer_public_key']));
+      var endpoint = firstParam(params, ['endpoint']) || url.host;
+      var address = firstParam(params, ['address', 'addresses', 'localaddress', 'localAddress', 'local_address', 'ip']);
+      var dns = firstParam(params, ['dns', 'dnsserver', 'dnsServer', 'dns_server']);
+      var mtu = firstParam(params, ['mtu']);
+      var presharedKey = normalizeWireGuardKey(firstParam(params, ['presharedkey', 'preSharedKey', 'preshared_key', 'psk']));
+      var allowedIps = firstParam(params, ['allowedips', 'allowedIPs', 'allowed_ips']) || '0.0.0.0/0, ::/0';
+      var keepalive = firstParam(params, ['persistentkeepalive', 'persistentKeepalive', 'persistent_keepalive', 'keepalive']) || '25';
+      var lines = ['[Interface]'];
+
+      if (privateKey) lines.push('PrivateKey = ' + privateKey);
+      if (address) lines.push('Address = ' + address);
+      if (dns) lines.push('DNS = ' + dns);
+      if (mtu) lines.push('MTU = ' + mtu);
+      lines.push('', '[Peer]');
+      if (publicKey) lines.push('PublicKey = ' + publicKey);
+      if (presharedKey) lines.push('PresharedKey = ' + presharedKey);
+      if (allowedIps) lines.push('AllowedIPs = ' + allowedIps);
+      if (endpoint) lines.push('Endpoint = ' + endpoint);
+      if (keepalive) lines.push('PersistentKeepalive = ' + keepalive);
+      return lines.join('\n') + '\n';
+    } catch (e) {
+      return raw;
+    }
+  }
+
+  function wireGuardFileName(title) {
+    var base = String(title || 'wireguard').trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '-').replace(/^-+|-+$/g, '');
+    if (!base) base = 'wireguard';
+    if (!/\.conf$/i.test(base)) base += '.conf';
+    return base;
+  }
+
+  function downloadTextFile(text, filename) {
+    var blob = new Blob([text], { type: 'application/x-wireguard-profile;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast('دانلود شد');
+  }
+
+  function downloadWireGuardConfig(raw, title) {
+    downloadTextFile(wireGuardConf(raw), wireGuardFileName(title));
   }
 
   function fetchInfo(ctx) {
@@ -1750,13 +1927,82 @@
     return 'Proxy';
   }
 
+  function timestampFromValue(value) {
+    if (value == null || value === '') return null;
+    var n = Number(value);
+    if (isFinite(n) && String(value).trim() !== '') {
+      if (n > 0 && n < 100000000000) n *= 1000;
+      return n;
+    }
+    var time = new Date(value).getTime();
+    return isFinite(time) ? time : null;
+  }
+
+  function remainingState(percent) {
+    if (!isFinite(percent)) return '';
+    if (percent <= 10) return 'danger';
+    if (percent <= 30) return 'warn';
+    return '';
+  }
+
+  function trafficAlertState(user) {
+    var limit = Number(user && user.data_limit);
+    if (!isFinite(limit) || limit <= 0) return '';
+    var used = Number(user.used_traffic) || 0;
+    var remain = Math.max(0, limit - used);
+    return remainingState(remain / limit * 100);
+  }
+
+  function timeAlertState(user, status) {
+    var end = timestampFromValue(status === 'on_hold' && user.on_hold_timeout ? user.on_hold_timeout : user.expire);
+    if (!end) return '';
+    var now = Date.now();
+    if (now >= end) return 'danger';
+
+    var start = timestampFromValue(user.created_at);
+    if (!start || start >= end) return '';
+    return remainingState((end - now) / (end - start) * 100);
+  }
+
+  function setInfoCellAlert(id, state) {
+    var cell = $(id);
+    if (!cell) return;
+    cell.classList.remove('alert-warn', 'alert-danger');
+    if (state === 'warn') cell.classList.add('alert-warn');
+    if (state === 'danger') cell.classList.add('alert-danger');
+  }
+
+  function renderProfileAlert(user, status) {
+    var trafficState = trafficAlertState(user);
+    var timeState = timeAlertState(user, status);
+    var alertState = trafficState === 'danger' || timeState === 'danger' ? 'danger' : (trafficState || timeState);
+    var subjects = [];
+
+    setInfoCellAlert('cell-remain', trafficState);
+    setInfoCellAlert('cell-expire', timeState);
+
+    if (trafficState) subjects.push('حجم');
+    if (timeState) subjects.push('زمان');
+
+    var box = $('profile-alert');
+    if (!alertState || !subjects.length) {
+      box.className = 'profile-alert hidden';
+      $('profile-alert-text').textContent = '';
+      return;
+    }
+
+    box.className = 'profile-alert ' + alertState;
+    $('profile-alert-text').textContent = subjects.length > 1
+      ? 'حجم و زمان شما رو به اتمام است'
+      : subjects[0] + ' شما رو به اتمام است';
+  }
+
   function renderUser(user) {
     var status = normalizeStatus(user.status);
     var labels = { active:'فعال', disabled:'غیرفعال', limited:'محدود', expired:'منقضی', on_hold:'معلق' };
     var name = user.username || '—';
     $('f-username').textContent = name;
     document.title = name && name !== '—' ? name : 'اشتراک';
-    $('avatar-letter').textContent = (name.charAt(0) || '?').toUpperCase();
 
     var pill = $('f-status');
     pill.textContent = labels[status] || status;
@@ -1768,6 +2014,7 @@
     $('f-limit').textContent = !limit ? '∞' : formatBytes(limit);
     $('f-remain').textContent = !limit ? '∞' : formatBytes(Math.max(0, limit - used));
     $('f-lifetime').textContent = formatBytes(user.lifetime_used_traffic);
+    $('f-hwid-limit').textContent = formatDeviceLimit(user.hwid_limit);
 
     if (status === 'on_hold' && user.on_hold_expire_duration) {
       var days = Math.floor(user.on_hold_expire_duration / 86400);
@@ -1776,6 +2023,7 @@
       $('f-expire').textContent = formatDate(user.expire);
     }
     $('f-online').textContent = user.online_at ? formatDate(user.online_at) : 'هرگز';
+    renderProfileAlert(user, status);
   }
 
   function renderAnnounce(headers) {
@@ -1816,12 +2064,13 @@
       var name = configDisplayName(raw);
       var title = name || (label + ' · ' + (idx + 1));
       var preview = raw.length > 44 ? raw.slice(0, 44) + '…' : raw;
-      var proto = protocolSvg(linkType(raw));
+      var type = linkType(raw);
+      var proto = protocolSvg(type);
       html += '<div class="conn-row" data-copy="link" data-idx="' + idx + '">' +
         '<span class="ico-svg ' + proto.tint + '">' + proto.svg + '</span>' +
         '<span class="body"><span class="title">' + escapeHtml(title) + '</span>' +
         '<span class="sub">' + escapeHtml((name ? label + ' · ' : '') + preview) + '</span></span>' +
-        actionBtnsHtml() + '</div>';
+        actionBtnsHtml(type === 'wireguard') + '</div>';
     });
 
     $('connections-list').innerHTML = html;
@@ -1829,6 +2078,7 @@
     $('connections-list').querySelectorAll('.conn-row').forEach(function (row) {
       var btn = row.querySelector('.btn-copy');
       var qrBtn = row.querySelector('.btn-qr');
+      var downloadBtn = row.querySelector('.btn-download');
 
       function rowPayload() {
         var kind = row.getAttribute('data-copy');
@@ -1850,6 +2100,13 @@
           e.stopPropagation();
           var payload = rowPayload();
           openQrModal(payload.text, payload.title);
+        });
+      }
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var payload = rowPayload();
+          downloadWireGuardConfig(payload.text, payload.title);
         });
       }
     });
@@ -1941,9 +2198,45 @@
     return desc[shortLang] || desc.fa || desc.en || desc.ru || desc.zh || '';
   }
 
+  function firstAppIconValue(app) {
+    var keys = ['icon', 'icon_url', 'image', 'image_url', 'logo', 'logo_url', 'thumbnail', 'thumbnail_url', 'picture', 'picture_url'];
+    for (var i = 0; i < keys.length; i++) {
+      var value = app && app[keys[i]];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+      if (value && typeof value === 'object') {
+        var nested = value.url || value.src || value.path;
+        if (typeof nested === 'string' && nested.trim()) return nested.trim();
+      }
+    }
+    return '';
+  }
+
+  function appIconUrl(app) {
+    var raw = firstAppIconValue(app);
+    if (!raw) return '';
+    if (/^data:image\//i.test(raw) || /^blob:/i.test(raw) || /^https?:\/\//i.test(raw)) return raw;
+    if (raw.indexOf('//') === 0) return window.location.protocol + raw;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) return '';
+
+    var base = (usageCtx && usageCtx.panel) || window.location.origin || window.location.href;
+    try {
+      return new URL(raw, base.replace(/\/+$/, '') + '/').href;
+    } catch (e) {
+      return raw;
+    }
+  }
+
+  function appIconHtml(app) {
+    var src = appIconUrl(app);
+    var fallback = '<span class="app-icon-fallback" aria-hidden="true">' + platformIcon(canonicalPlatform(app && app.platform)) + '</span>';
+    if (!src) return '<span class="app-icon">' + fallback + '</span>';
+    return '<span class="app-icon"><img src="' + escapeAttr(src) + '" alt="' + escapeAttr((app && app.name) || 'اپلیکیشن') + '" loading="lazy" onerror="this.remove();">' + fallback + '</span>';
+  }
+
   function appCardHtml(app) {
     var dlList = app.download_links || [];
     var desc = appDescription(app);
+    var icon = appIconHtml(app);
     var dls = dlList.map(function (d) {
       return '<a class="dl" href="' + escapeAttr(d.url) + '" target="_blank" rel="noopener">' +
         escapeHtml(d.name || 'دانلود') + '</a>';
@@ -1953,11 +2246,13 @@
       : '';
     var dlCount = Math.min(dlList.length, 2);
     return '<div class="app-card">' +
-      '<div class="app-head"><span class="app-title-line"><span class="app-name">' + escapeHtml(app.name) +
+      '<div class="app-top">' + icon +
+      '<div class="app-info"><div class="app-head"><span class="app-title-line"><span class="app-name">' + escapeHtml(app.name) +
       '</span>' + (app.recommended ? '<span class="app-tag tag-orange">پیشنهادی</span>' : '') + '</span>' +
       (app.platform ? '<span class="app-tag ' + platformTagClass(app.platform) + '">' + escapeHtml(app.platform) + '</span>' : '') +
       '</div>' +
       (desc ? '<div class="app-desc">' + escapeHtml(desc) + '</div>' : '') +
+      '</div></div>' +
       '<div class="app-btns" data-dl-count="' + dlCount + '">' + dls + imp + '</div></div>';
   }
 
@@ -1982,11 +2277,24 @@
     return ordered;
   }
 
+  function setAppsTabVisible(hasApps) {
+    var shell = $('content-tabs');
+    var wasConfigsOnly = shell.classList.contains('configs-only');
+    shell.classList.toggle('configs-only', !hasApps);
+    if (!hasApps) {
+      $('apps-list').innerHTML = '';
+      setActiveTab('configs');
+    } else if (wasConfigsOnly) {
+      setActiveTab('apps');
+    }
+  }
+
   function renderApps(apps) {
     if (!apps || !apps.length) {
-      $('apps-list').innerHTML = '<div class="empty-state">اپلیکیشنی برای نمایش نیست</div>';
+      setAppsTabVisible(false);
       return;
     }
+    setAppsTabVisible(true);
 
     var detectedOS = detectOS();
     var currentPlatform = detectedOS === 'unknown' ? '' : mapOSToPlatform(detectedOS);
@@ -2010,9 +2318,9 @@
           '</span>' +
           '<span class="platform-chev">' + SVG_CHEV + '</span>' +
         '</button>' +
-        '<div class="platform-content"><div class="platform-apps">' +
+        '<div class="platform-content">' +
           groups[key].map(appCardHtml).join('') +
-        '</div></div>' +
+        '</div>' +
       '</section>';
     }).join('') + '</div>';
 
@@ -2172,8 +2480,12 @@
     }
     if (savedPanel && savedToken) {
       var ctx = resolveContext(savedPanel, savedToken);
-      if (ctx) loadAll(ctx);
+      if (ctx) {
+        loadAll(ctx);
+        return;
+      }
     }
+    showLogin();
   })();
 })();
   </script>
