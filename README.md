@@ -17,6 +17,7 @@
 
 <p><strong>تغییرات جدید</strong></p>
 
+- اضافه شدن نسخه هاست
 - تغییر فونت به وزیرمتن
 - نمایش زمان باقیمانده بصورت روز ( به جای تاریخ )
 - اضافه شدن هشدار کم بودن حجم یا زمان
@@ -77,6 +78,16 @@ SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
 sudo pasarguard restart
 ```
 
+<p><strong>نصب روی هاست</strong></p>
+
+برای استفاده از نسخه هاست فولدر sub رو در هاست آپلود کنید و در فایل index.php مقدار BASE_URL را مانند مثال زیر به آدرس پنل خود تغییر دهید.
+</div>
+
+```bash
+const BASE_URL = 'https://panel-URL:PORT';
+```
+
+<div dir="rtl" align="right">
 <div dir="rtl" align="right">
 
 <p><strong>تنظیم اعلان و اپلیکیشن‌ها از پنل</strong></p>
