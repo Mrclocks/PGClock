@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.3.0"
+readonly SCRIPT_VERSION="1.3.1"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -182,11 +182,17 @@ required_markers = [
 
 for marker in required_markers:
     if marker not in html:
-        sys.stderr.write("Template is incomplete before branding: missing " + marker + "\n")
+        sys.stderr.write(
+            "Invalid Pro template: missing " + marker + ". "
+            "Use the PGClockPRO repository template.\n"
+        )
         sys.exit(1)
 
-if original_len < 50000:
-    sys.stderr.write("Template file looks too small (" + str(original_len) + " bytes).\n")
+if original_len < 80000:
+    sys.stderr.write(
+        "Pro template looks too small (" + str(original_len) + " bytes). "
+        "Expected the full PGClockPRO index.html.\n"
+    )
     sys.exit(1)
 
 if name:
@@ -335,14 +341,13 @@ install_pro() {
   info "Installing ${C_BOLD}PGClock Pro${C_RESET}..."
   prompt_pro_branding
 
-  # Use the full standard template, then patch branding fields only.
-  download_template "$URL_STANDARD" "$TARGET_FILE"
+  download_template "$URL_PRO" "$TARGET_FILE"
 
   backup="${TARGET_FILE}.bak"
   cp "$TARGET_FILE" "$backup"
   if ! apply_brand_pro "$TARGET_FILE"; then
     mv "$backup" "$TARGET_FILE"
-    fail "Pro branding failed. The previous template backup was restored."
+    fail "Pro branding failed. Restored the downloaded Pro template."
   fi
   rm -f "$backup"
 }
