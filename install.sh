@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.1.0"
+readonly SCRIPT_VERSION="1.2.0"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -63,7 +63,7 @@ print_banner() {
   log_blank
   log_line "${C_CYAN}${C_BOLD}╔══════════════════════════════════════════════════════════════╗${C_RESET}"
   log_line "${C_CYAN}${C_BOLD}║${C_RESET}              ${C_WHITE}${C_BOLD}PGClock Installer for Pasarguard${C_RESET}              ${C_CYAN}${C_BOLD}║${C_RESET}"
-  log_line "${C_CYAN}${C_BOLD}║${C_RESET}                     ${C_DIM}نسخه ${SCRIPT_VERSION}${C_RESET}                         ${C_CYAN}${C_BOLD}║${C_RESET}"
+  log_line "${C_CYAN}${C_BOLD}║${C_RESET}                        ${C_DIM}Version ${SCRIPT_VERSION}${C_RESET}                        ${C_CYAN}${C_BOLD}║${C_RESET}"
   log_line "${C_CYAN}${C_BOLD}╚══════════════════════════════════════════════════════════════╝${C_RESET}"
   log_blank
 }
@@ -74,17 +74,17 @@ warn() { log_line "${C_YELLOW}!${C_RESET}  $*"; }
 fail() { log_line "${C_RED}✖${C_RESET}  $*"; exit 1; }
 
 need_cmd() {
-  command -v "$1" >/dev/null 2>&1 || fail "ابزار «$1» یافت نشد. ابتدا نصب کنید: apt update && apt install -y $1"
+  command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1. Install it with: apt update && apt install -y $1"
 }
 
 require_root() {
   if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-    fail "این اسکریپت باید با root اجرا شود. دوباره با sudo امتحان کنید."
+    fail "This script must run as root. Try again with sudo."
   fi
 }
 
 check_system() {
-  info "بررسی پیش‌نیازها..."
+  info "Checking prerequisites..."
   need_cmd wget
   need_cmd curl
   need_cmd python3
@@ -93,20 +93,20 @@ check_system() {
   need_cmd mktemp
 
   if [[ ! -f "$ENV_FILE" ]]; then
-    warn "فایل ${ENV_FILE} پیدا نشد. مسیر را بررسی کنید؛ ادامه می‌دهیم."
+    warn "${ENV_FILE} not found. Continuing anyway."
   fi
 
   if ! command -v pasarguard >/dev/null 2>&1; then
-    warn "دستور pasarguard پیدا نشد. در پایان ممکن است نیاز به ریستارت دستی داشته باشید."
+    warn "pasarguard command not found. You may need to restart the service manually."
   fi
 
-  ok "پیش‌نیازها آماده است"
+  ok "Prerequisites OK"
 }
 
 ensure_target_dir() {
-  info "ساخت مسیر قالب..."
+  info "Creating template directory..."
   mkdir -p "$TARGET_DIR"
-  ok "مسیر ${TARGET_DIR} آماده است"
+  ok "Directory ready: ${TARGET_DIR}"
 }
 
 validate_logo_url() {
@@ -119,17 +119,17 @@ validate_logo_url() {
 download_template() {
   local url="$1"
   local dest="$2"
-  info "دریافت فایل از GitHub..."
-  wget -N -O "$dest" "$url" || fail "دانلود قالب ناموفق بود. اتصال اینترنت یا آدرس را بررسی کنید."
-  [[ -s "$dest" ]] || fail "فایل دریافت‌شده خالی است."
-  ok "فایل index.html دریافت شد"
+  info "Downloading template from GitHub..."
+  wget -N -O "$dest" "$url" || fail "Download failed. Check your internet connection and the URL."
+  [[ -s "$dest" ]] || fail "Downloaded file is empty."
+  ok "index.html downloaded"
 }
 
 apply_brand_pro() {
   local src="$1"
   local dest="$2"
 
-  info "اعمال تنظیمات برند PGClock Pro..."
+  info "Applying PGClock Pro brand settings..."
   BRAND_NAME="${BRAND_NAME:-}" BRAND_SUBTITLE="${BRAND_SUBTITLE:-}" BRAND_LOGO="${BRAND_LOGO:-}" \
   python3 - "$src" "$dest" <<'PY'
 import os
@@ -190,11 +190,11 @@ html = html[: block.start()] + segment + html[block.end() :]
 with open(dest, "w", encoding="utf-8") as f:
     f.write(html)
 PY
-  ok "تنظیمات برند در فایل HTML اعمال شد"
+  ok "Brand settings applied to HTML"
 }
 
 configure_env() {
-  info "به‌روزرسانی ${ENV_FILE}..."
+  info "Updating ${ENV_FILE}..."
 
   local tmp
   tmp="$(mktemp)"
@@ -203,7 +203,7 @@ configure_env() {
     cp "$ENV_FILE" "$tmp"
   else
     : > "$tmp"
-    warn "فایل .env ساخته شد."
+    warn ".env file created."
   fi
 
   set_env_value() {
@@ -223,57 +223,57 @@ configure_env() {
   install -m 600 "$tmp" "$ENV_FILE"
   rm -f "$tmp"
 
-  ok "تنظیمات .env اعمال شد"
+  ok ".env updated"
 }
 
 restart_pasarguard() {
-  info "ری‌استارت سرویس Pasarguard..."
+  info "Restarting Pasarguard..."
   if command -v pasarguard >/dev/null 2>&1; then
     if pasarguard restart; then
-      ok "Pasarguard با موفقیت ری‌استارت شد"
+      ok "Pasarguard restarted successfully"
     else
-      warn "ری‌استارت خودکار ناموفق بود. دستی اجرا کنید: pasarguard restart"
+      warn "Automatic restart failed. Run manually: pasarguard restart"
     fi
   else
-    warn "دستور pasarguard در دسترس نیست. پس از نصب دستی ری‌استارت کنید."
+    warn "pasarguard command not available. Restart the service manually after install."
   fi
 }
 
 print_menu() {
-  log_line "${C_BOLD}انتخاب قالب:${C_RESET}"
+  log_line "${C_BOLD}Select a template:${C_RESET}"
   log_blank
-  log_line "  ${C_GREEN}1${C_RESET}) ${C_BOLD}PGClock Lite${C_RESET}   ${C_DIM}نسخه سبک و سریع${C_RESET}"
-  log_line "  ${C_CYAN}2${C_RESET}) ${C_BOLD}PGClock${C_RESET}        ${C_DIM}نسخه استاندارد (پیشنهادی)${C_RESET}"
-  log_line "  ${C_YELLOW}3${C_RESET}) ${C_BOLD}PGClock Pro${C_RESET}     ${C_DIM}شخصی‌سازی نام برند، شعار و لوگو${C_RESET}"
-  log_line "  ${C_RED}0${C_RESET}) ${C_BOLD}خروج${C_RESET}"
+  log_line "  ${C_GREEN}1${C_RESET}) ${C_BOLD}PGClock Lite${C_RESET}   ${C_DIM}Lightweight and fast${C_RESET}"
+  log_line "  ${C_CYAN}2${C_RESET}) ${C_BOLD}PGClock${C_RESET}        ${C_DIM}Standard edition (recommended)${C_RESET}"
+  log_line "  ${C_YELLOW}3${C_RESET}) ${C_BOLD}PGClock Pro${C_RESET}     ${C_DIM}Custom brand name, tagline, and logo${C_RESET}"
+  log_line "  ${C_RED}0${C_RESET}) ${C_BOLD}Exit${C_RESET}"
   log_blank
 }
 
 prompt_pro_branding() {
   local brand_name brand_subtitle brand_logo
 
-  log_line "${C_YELLOW}${C_BOLD}─── شخصی‌سازی PGClock Pro ───${C_RESET}"
+  log_line "${C_YELLOW}${C_BOLD}─── PGClock Pro Brand Setup ───${C_RESET}"
   log_blank
-  log_line "${C_DIM}Enter برای رد کردن هر مورد و استفاده از مقدار پیش‌فرض${C_RESET}"
+  log_line "${C_DIM}Press Enter to skip any field and keep the default value${C_RESET}"
   log_blank
 
-  read_tty "$(printf '%b' "${C_BOLD}نام برند${C_RESET} (مثال: MrClock): ")" brand_name
+  read_tty "$(printf '%b' "${C_BOLD}Brand name${C_RESET} (e.g. MrClock): ")" brand_name
   brand_name="${brand_name:-}"
 
-  read_tty "$(printf '%b' "${C_BOLD}شعار / کپشن${C_RESET} (مثال: پنل اشتراک): ")" brand_subtitle
+  read_tty "$(printf '%b' "${C_BOLD}Tagline / caption${C_RESET} (e.g. Subscription panel): ")" brand_subtitle
   brand_subtitle="${brand_subtitle:-}"
 
   while true; do
-    read_tty "$(printf '%b' "${C_BOLD}آدرس URL لوگو${C_RESET} (https://...): ")" brand_logo
+    read_tty "$(printf '%b' "${C_BOLD}Logo URL${C_RESET} (https://...): ")" brand_logo
     brand_logo="${brand_logo:-}"
     if [[ -z "$brand_logo" ]]; then
       break
     fi
     if validate_logo_url "$brand_logo"; then
-      ok "آدرس لوگو معتبر است"
+      ok "Logo URL is valid"
       break
     fi
-    warn "آدرس لوگو نامعتبر است یا در دسترس نیست. URL کامل https:// وارد کنید یا Enter بزنید تا رد شود."
+    warn "Invalid or unreachable logo URL. Enter a full https:// URL, or press Enter to skip."
   done
 
   export BRAND_NAME="$brand_name"
@@ -282,19 +282,19 @@ prompt_pro_branding() {
 }
 
 install_lite() {
-  info "نصب ${C_BOLD}PGClock Lite${C_RESET}..."
+  info "Installing ${C_BOLD}PGClock Lite${C_RESET}..."
   download_template "$URL_LITE" "$TARGET_FILE"
 }
 
 install_standard() {
-  info "نصب ${C_BOLD}PGClock${C_RESET}..."
+  info "Installing ${C_BOLD}PGClock${C_RESET}..."
   download_template "$URL_STANDARD" "$TARGET_FILE"
 }
 
 install_pro() {
   local tmp_file
 
-  info "نصب ${C_BOLD}PGClock Pro${C_RESET}..."
+  info "Installing ${C_BOLD}PGClock Pro${C_RESET}..."
   prompt_pro_branding
 
   tmp_file="$(mktemp)"
@@ -307,13 +307,13 @@ print_success_box() {
   local edition="$1"
   log_blank
   log_line "${C_GREEN}${C_BOLD}╔══════════════════════════════════════════════════════════════╗${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}                     ${C_WHITE}${C_BOLD}نصب با موفقیت انجام شد${C_RESET}                     ${C_GREEN}${C_BOLD}║${C_RESET}"
+  log_line "${C_GREEN}${C_BOLD}║${C_RESET}                    ${C_WHITE}${C_BOLD}Installation complete${C_RESET}                     ${C_GREEN}${C_BOLD}║${C_RESET}"
   log_line "${C_GREEN}${C_BOLD}╠══════════════════════════════════════════════════════════════╣${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}قالب:${C_RESET} ${edition}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}مسیر:${C_RESET} ${TARGET_FILE}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}env:${C_RESET}  ${ENV_FILE}"
+  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Template:${C_RESET} ${edition}"
+  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Path:${C_RESET}     ${TARGET_FILE}"
+  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Env:${C_RESET}      ${ENV_FILE}"
   log_line "${C_GREEN}${C_BOLD}╠══════════════════════════════════════════════════════════════╣${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  صفحه اشتراک کاربران آماده است.                             ${C_GREEN}${C_BOLD}║${C_RESET}"
+  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  Your subscription page is ready.                           ${C_GREEN}${C_BOLD}║${C_RESET}"
   log_line "${C_GREEN}${C_BOLD}╚══════════════════════════════════════════════════════════════╝${C_RESET}"
   log_blank
 }
@@ -328,7 +328,7 @@ main() {
 
   while true; do
     print_menu
-    read_tty "$(printf '%b' "${C_BOLD}گزینه مورد نظر را وارد کنید [0-3]: ${C_RESET}")" choice
+    read_tty "$(printf '%b' "${C_BOLD}Enter your choice [0-3]: ${C_RESET}")" choice
     choice="${choice:-}"
 
     case "$choice" in
@@ -348,11 +348,11 @@ main() {
         break
         ;;
       0)
-        info "نصب لغو شد."
+        info "Installation cancelled."
         exit 0
         ;;
       *)
-        warn "گزینه نامعتبر است. عدد 0 تا 3 وارد کنید."
+        warn "Invalid choice. Please enter a number from 0 to 3."
         log_blank
         ;;
     esac
