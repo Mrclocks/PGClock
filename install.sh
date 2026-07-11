@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="1.1.0"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -14,6 +14,21 @@ readonly INSTALLER_RAW="https://raw.githubusercontent.com/Mrclocks/PGClock/main/
 readonly URL_LITE="https://raw.githubusercontent.com/Mrclocks/PGClockLite/main/index.html"
 readonly URL_STANDARD="https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html"
 readonly URL_PRO="https://raw.githubusercontent.com/Mrclocks/PGClockPRO/main/index.html"
+
+# When run via "curl | bash", stdin is the pipe — re-download and re-run from a real file.
+if [[ ! -t 0 ]] && [[ -z "${PGCLOCK_INSTALL_REEXEC:-}" ]]; then
+  tmpfile="$(mktemp /tmp/pgclock-install-XXXXXX.sh)"
+  cleanup() { rm -f "$tmpfile"; }
+  trap cleanup EXIT
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$INSTALLER_RAW" -o "$tmpfile"
+  else
+    wget -qO "$tmpfile" "$INSTALLER_RAW"
+  fi
+  chmod 700 "$tmpfile"
+  export PGCLOCK_INSTALL_REEXEC=1
+  exec bash "$tmpfile" "$@"
+fi
 
 if [[ -t 1 ]]; then
   readonly C_RESET='\033[0m'
@@ -31,6 +46,18 @@ fi
 
 log_line() { printf '%b\n' "$1"; }
 log_blank() { printf '\n'; }
+
+read_tty() {
+  local prompt=$1
+  local __var=$2
+  local input=""
+  if [[ -r /dev/tty ]]; then
+    IFS= read -r -p "$prompt" input </dev/tty || true
+  else
+    IFS= read -r -p "$prompt" input || true
+  fi
+  printf -v "$__var" '%s' "$input"
+}
 
 print_banner() {
   log_blank
@@ -103,7 +130,7 @@ apply_brand_pro() {
   local dest="$2"
 
   info "اعمال تنظیمات برند PGClock Pro..."
-  BRAND_NAME="$brand_name" BRAND_SUBTITLE="$brand_subtitle" BRAND_LOGO="$brand_logo" \
+  BRAND_NAME="${BRAND_NAME:-}" BRAND_SUBTITLE="${BRAND_SUBTITLE:-}" BRAND_LOGO="${BRAND_LOGO:-}" \
   python3 - "$src" "$dest" <<'PY'
 import os
 import re
@@ -230,14 +257,14 @@ prompt_pro_branding() {
   log_line "${C_DIM}Enter برای رد کردن هر مورد و استفاده از مقدار پیش‌فرض${C_RESET}"
   log_blank
 
-  read -r -p "$(printf '%b' "${C_BOLD}نام برند${C_RESET} (مثال: MrClock): ")" brand_name || true
+  read_tty "$(printf '%b' "${C_BOLD}نام برند${C_RESET} (مثال: MrClock): ")" brand_name
   brand_name="${brand_name:-}"
 
-  read -r -p "$(printf '%b' "${C_BOLD}شعار / کپشن${C_RESET} (مثال: پنل اشتراک): ")" brand_subtitle || true
+  read_tty "$(printf '%b' "${C_BOLD}شعار / کپشن${C_RESET} (مثال: پنل اشتراک): ")" brand_subtitle
   brand_subtitle="${brand_subtitle:-}"
 
   while true; do
-    read -r -p "$(printf '%b' "${C_BOLD}آدرس URL لوگو${C_RESET} (https://...): ")" brand_logo || true
+    read_tty "$(printf '%b' "${C_BOLD}آدرس URL لوگو${C_RESET} (https://...): ")" brand_logo
     brand_logo="${brand_logo:-}"
     if [[ -z "$brand_logo" ]]; then
       break
@@ -249,9 +276,9 @@ prompt_pro_branding() {
     warn "آدرس لوگو نامعتبر است یا در دسترس نیست. URL کامل https:// وارد کنید یا Enter بزنید تا رد شود."
   done
 
-  BRAND_NAME="$brand_name"
-  BRAND_SUBTITLE="$brand_subtitle"
-  BRAND_LOGO="$brand_logo"
+  export BRAND_NAME="$brand_name"
+  export BRAND_SUBTITLE="$brand_subtitle"
+  export BRAND_LOGO="$brand_logo"
 }
 
 install_lite() {
@@ -301,7 +328,7 @@ main() {
 
   while true; do
     print_menu
-    read -r -p "$(printf '%b' "${C_BOLD}گزینه مورد نظر را وارد کنید [0-3]: ${C_RESET}")" choice || true
+    read_tty "$(printf '%b' "${C_BOLD}گزینه مورد نظر را وارد کنید [0-3]: ${C_RESET}")" choice
     choice="${choice:-}"
 
     case "$choice" in
