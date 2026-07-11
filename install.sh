@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.3.2"
+readonly SCRIPT_VERSION="1.4.1"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -47,6 +47,10 @@ fi
 log_line() { printf '%b\n' "$1"; }
 log_blank() { printf '\n'; }
 
+hr() {
+  log_line "${C_CYAN}${C_BOLD}================================================================${C_RESET}"
+}
+
 read_tty() {
   local prompt=$1
   local __var=$2
@@ -61,17 +65,17 @@ read_tty() {
 
 print_banner() {
   log_blank
-  log_line "${C_CYAN}${C_BOLD}╔══════════════════════════════════════════════════════════════╗${C_RESET}"
-  log_line "${C_CYAN}${C_BOLD}║${C_RESET}              ${C_WHITE}${C_BOLD}PGClock Installer for Pasarguard${C_RESET}              ${C_CYAN}${C_BOLD}║${C_RESET}"
-  log_line "${C_CYAN}${C_BOLD}║${C_RESET}                        ${C_DIM}Version ${SCRIPT_VERSION}${C_RESET}                        ${C_CYAN}${C_BOLD}║${C_RESET}"
-  log_line "${C_CYAN}${C_BOLD}╚══════════════════════════════════════════════════════════════╝${C_RESET}"
+  hr
+  log_line "${C_WHITE}${C_BOLD}  PGClock Installer for Pasarguard${C_RESET}"
+  log_line "${C_DIM}  Version ${SCRIPT_VERSION}${C_RESET}"
+  hr
   log_blank
 }
 
-ok()   { log_line "${C_GREEN}✔${C_RESET}  $*"; }
-info() { log_line "${C_BLUE}→${C_RESET}  $*"; }
-warn() { log_line "${C_YELLOW}!${C_RESET}  $*"; }
-fail() { log_line "${C_RED}✖${C_RESET}  $*"; exit 1; }
+ok()   { log_line "${C_GREEN}[OK]${C_RESET}  $*"; }
+info() { log_line "${C_BLUE}[>>]${C_RESET}  $*"; }
+warn() { log_line "${C_YELLOW}[!!]${C_RESET}  $*"; }
+fail() { log_line "${C_RED}[ERR]${C_RESET} $*"; exit 1; }
 
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1. Install it with: apt update && apt install -y $1"
@@ -148,6 +152,13 @@ with open(path, "r", encoding="utf-8") as f:
 
 original_len = len(html)
 
+if original_len < 1000 or "</html>" not in html.lower():
+    sys.stderr.write("Downloaded file does not look like a complete HTML template.\n")
+    sys.exit(1)
+
+BRAND_OBJECT_KEYS = ("DEFAULT_BRAND", "MRCLOCK_DEFAULT_BRAND", "PANEL_DEFAULT_BRAND")
+LOGO_KEYS = ("logoUrl", "logo", "logoURL", "logo_url")
+
 def js_quote(value: str) -> str:
     return (
         value.replace("\\", "\\\\")
@@ -159,73 +170,159 @@ def js_quote(value: str) -> str:
 def html_text(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-def replace_brand_string(source: str, field: str, value: str) -> str:
-    """Replace one quoted string inside DEFAULT_BRAND only."""
-    pattern = (
-        r'(var DEFAULT_BRAND = \{[\s\S]*?'
-        + re.escape(field)
-        + r'\s*:\s*")(?:[^"\\]|\\.)*(")'
-    )
-    updated, count = re.subn(
+def attr_quote(value: str) -> str:
+    return value.replace("&", "&amp;").replace('"', "&quot;")
+
+def extract_braced_object(text: str, open_index: int):
+    depth = 0
+    i = open_index
+    in_str = None
+    esc = False
+    while i < len(text):
+        ch = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == in_str:
+                in_str = None
+        else:
+            if ch in ('"', "'"):
+                in_str = ch
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    end = i + 1
+                    while end < len(text) and text[end] in " \t\r\n":
+                        end += 1
+                    if end < len(text) and text[end] == ";":
+                        end += 1
+                    return open_index, end
+        i += 1
+    return None
+
+def find_brand_object(text: str):
+    for key in BRAND_OBJECT_KEYS:
+        match = re.search(
+            rf"(?:var|const|let)\s+{re.escape(key)}\s*=\s*(\{{)",
+            text,
+        )
+        if not match:
+            continue
+        bounds = extract_braced_object(text, match.start(1))
+        if bounds:
+            return key, bounds
+    return None, None
+
+def replace_quoted_field(block: str, field: str, value: str):
+    pattern = rf'({re.escape(field)}\s*:\s*")(?:[^"\\]|\\.)*(")'
+    return re.subn(
         pattern,
         lambda m: m.group(1) + js_quote(value) + m.group(2),
-        source,
+        block,
         count=1,
     )
-    if count != 1:
-        sys.stderr.write("Could not update DEFAULT_BRAND field: " + field + "\n")
-        sys.exit(1)
+
+def patch_brand_object(block: str):
+    updated = block
+
+    if name:
+        updated, count = replace_quoted_field(updated, "name", name)
+        if count != 1:
+            sys.stderr.write('Could not find brand field "name" in the template.\n')
+            sys.exit(1)
+
+    if subtitle:
+        if re.search(r"subtitle\s*:\s*\{", updated):
+            updated, fa_count = replace_quoted_field(updated, "fa", subtitle)
+            updated, en_count = replace_quoted_field(updated, "en", subtitle)
+            if fa_count != 1 or en_count != 1:
+                sys.stderr.write('Could not find subtitle.fa / subtitle.en in the template.\n')
+                sys.exit(1)
+        else:
+            updated, count = replace_quoted_field(updated, "subtitle", subtitle)
+            if count != 1:
+                sys.stderr.write('Could not find a subtitle field in the template.\n')
+                sys.exit(1)
+
+    if logo:
+        for key in LOGO_KEYS:
+            updated, count = replace_quoted_field(updated, key, logo)
+            if count == 1:
+                break
+        else:
+            sys.stderr.write('Could not find a logo URL field (logoUrl / logo) in the template.\n')
+            sys.exit(1)
+
     return updated
 
-required = [
-    "var DEFAULT_BRAND = {",
-    "var BRAND = window.MRCLOCK_BRAND",
-    "function init(",
-    "init();",
-    "</html>",
-]
+def patch_html_fallback(text: str):
+    if name:
+        text, n = re.subn(
+            rf'(<[^>]*\bid=["\']brand-title["\'][^>]*>)([^<]*)(</[^>]+>)',
+            lambda m: m.group(1) + html_text(name) + m.group(3),
+            text,
+            count=1,
+        )
+        if n == 0:
+            text, _ = re.subn(
+                r"(<title>)([^<]*)(</title>)",
+                lambda m: m.group(1) + html_text(name) + m.group(3),
+                text,
+                count=1,
+            )
 
-for token in required:
-    if token not in html:
-        sys.stderr.write("Invalid Pro template: missing " + token + "\n")
-        sys.exit(1)
+    if subtitle:
+        text, _ = re.subn(
+            rf'(<[^>]*\bid=["\']brand-subtitle["\'][^>]*>)([^<]*)(</[^>]+>)',
+            lambda m: m.group(1) + html_text(subtitle) + m.group(3),
+            text,
+            count=1,
+        )
 
-if original_len < 80000:
-    sys.stderr.write("Pro template looks too small (" + str(original_len) + " bytes).\n")
+    if logo:
+        text, n = re.subn(
+            rf'(<[^>]*\bid=["\']brand-img["\'][^>]*\ssrc=["\'])([^"\']*)(["\'])',
+            lambda m: m.group(1) + attr_quote(logo) + m.group(3),
+            text,
+            count=1,
+        )
+        if n == 0:
+            text, _ = re.subn(
+                rf'(<[^>]*\bid=["\']brand-img["\'][^>]*)(>)',
+                lambda m: m.group(1) + ' src="' + attr_quote(logo) + '"' + m.group(2),
+                text,
+                count=1,
+            )
+
+    return text
+
+brand_key, bounds = find_brand_object(html)
+if not brand_key:
+    sys.stderr.write(
+        "Brand config object not found. Expected one of: "
+        + ", ".join(BRAND_OBJECT_KEYS)
+        + "\n"
+    )
     sys.exit(1)
 
-if name:
-    html = replace_brand_string(html, "name", name)
-    html = re.sub(
-        r'(<h1 class="brand-title" id="brand-title">)[^<]*(</h1>)',
-        lambda m: m.group(1) + html_text(name) + m.group(2),
-        html,
-        count=1,
-    )
+start, end = bounds
+block = html[start:end]
+html = html[:start] + patch_brand_object(block) + html[end:]
+html = patch_html_fallback(html)
 
-if subtitle:
-    html = replace_brand_string(html, "fa", subtitle)
-    html = replace_brand_string(html, "en", subtitle)
-    html = re.sub(
-        r'(<p class="brand-sub" id="brand-subtitle">)[^<]*(</p>)',
-        lambda m: m.group(1) + html_text(subtitle) + m.group(2),
-        html,
-        count=1,
-    )
+if find_brand_object(html)[0] is None:
+    sys.stderr.write("Brand config object missing after patch.\n")
+    sys.exit(1)
 
-if logo:
-    html = replace_brand_string(html, "logoUrl", logo)
-
-for token in required:
-    if token not in html:
-        sys.stderr.write("Template became invalid after branding: missing " + token + "\n")
-        sys.exit(1)
-
-if re.search(r'\};RAND\s*=', html):
+if re.search(r"\};RAND\s*=", html):
     sys.stderr.write("Template JavaScript was corrupted during branding.\n")
     sys.exit(1)
 
-if len(html) < original_len * 0.95:
+if len(html) < original_len * 0.90:
     sys.stderr.write("Refusing to write: output looks truncated.\n")
     sys.exit(1)
 
@@ -295,7 +392,7 @@ print_menu() {
 prompt_pro_branding() {
   local brand_name brand_subtitle brand_logo
 
-  log_line "${C_YELLOW}${C_BOLD}─── PGClock Pro Brand Setup ───${C_RESET}"
+  log_line "${C_YELLOW}${C_BOLD}--- PGClock Pro Brand Setup ---${C_RESET}"
   log_blank
   log_line "${C_DIM}Press Enter to skip any field and keep the default value${C_RESET}"
   log_blank
@@ -354,15 +451,15 @@ install_pro() {
 print_success_box() {
   local edition="$1"
   log_blank
-  log_line "${C_GREEN}${C_BOLD}╔══════════════════════════════════════════════════════════════╗${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}                    ${C_WHITE}${C_BOLD}Installation complete${C_RESET}                     ${C_GREEN}${C_BOLD}║${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}╠══════════════════════════════════════════════════════════════╣${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Template:${C_RESET} ${edition}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Path:${C_RESET}     ${TARGET_FILE}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  ${C_BOLD}Env:${C_RESET}      ${ENV_FILE}"
-  log_line "${C_GREEN}${C_BOLD}╠══════════════════════════════════════════════════════════════╣${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}║${C_RESET}  Your subscription page is ready.                           ${C_GREEN}${C_BOLD}║${C_RESET}"
-  log_line "${C_GREEN}${C_BOLD}╚══════════════════════════════════════════════════════════════╝${C_RESET}"
+  hr
+  log_line "${C_GREEN}${C_BOLD}  Installation complete${C_RESET}"
+  log_blank
+  log_line "  ${C_BOLD}Template:${C_RESET} ${edition}"
+  log_line "  ${C_BOLD}Path:${C_RESET}     ${TARGET_FILE}"
+  log_line "  ${C_BOLD}Env:${C_RESET}      ${ENV_FILE}"
+  log_blank
+  log_line "  Your subscription page is ready."
+  hr
   log_blank
 }
 
