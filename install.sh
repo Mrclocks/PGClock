@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.2.0"
+readonly SCRIPT_VERSION="1.2.1"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -126,23 +126,27 @@ download_template() {
 }
 
 apply_brand_pro() {
-  local src="$1"
-  local dest="$2"
+  local file="$1"
 
   info "Applying PGClock Pro brand settings..."
   BRAND_NAME="${BRAND_NAME:-}" BRAND_SUBTITLE="${BRAND_SUBTITLE:-}" BRAND_LOGO="${BRAND_LOGO:-}" \
-  python3 - "$src" "$dest" <<'PY'
+  python3 - "$file" <<'PY'
 import os
 import re
 import sys
 
-src, dest = sys.argv[1], sys.argv[2]
+path = sys.argv[1]
 name = os.environ.get("BRAND_NAME", "").strip()
 subtitle = os.environ.get("BRAND_SUBTITLE", "").strip()
 logo = os.environ.get("BRAND_LOGO", "").strip()
 
-with open(src, "r", encoding="utf-8") as f:
+with open(path, "r", encoding="utf-8") as f:
     html = f.read()
+
+original_len = len(html)
+if original_len < 1000:
+    sys.stderr.write("Template file looks too small or incomplete.\n")
+    sys.exit(1)
 
 def js_quote(value: str) -> str:
     return (
@@ -155,39 +159,86 @@ def js_quote(value: str) -> str:
 def html_text(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-block = re.search(r"var DEFAULT_BRAND = \{.*?\n  \};", html, re.DOTALL)
-if not block:
+def find_brand_block(text: str):
+    marker = "var DEFAULT_BRAND = {"
+    start = text.find(marker)
+    if start == -1:
+        return None
+    brace = text.find("{", start)
+    if brace == -1:
+        return None
+    depth = 0
+    for i in range(brace, len(text)):
+        ch = text[i]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                if end < len(text) and text[end] == ";":
+                    end += 1
+                return start, end
+    return None
+
+bounds = find_brand_block(html)
+if not bounds:
     sys.stderr.write("DEFAULT_BRAND block not found in template.\n")
     sys.exit(1)
 
-segment = block.group(0)
+start, end = bounds
+segment = html[start:end]
 
 if name:
-    segment = re.sub(r'(name:\s*")[^"]*(")', r"\1" + js_quote(name) + r"\2", segment, count=1)
+    segment = re.sub(
+        r'(name:\s*")(?:[^"\\]|\\.)*(")',
+        lambda m: m.group(1) + js_quote(name) + m.group(2),
+        segment,
+        count=1,
+    )
     html = re.sub(
         r'(<h1 class="brand-title" id="brand-title">)[^<]*(</h1>)',
-        r"\1" + html_text(name) + r"\2",
+        lambda m: m.group(1) + html_text(name) + m.group(2),
         html,
         count=1,
     )
 
 if subtitle:
     esc = js_quote(subtitle)
-    segment = re.sub(r'(fa:\s*")[^"]*(")', r"\1" + esc + r"\2", segment, count=1)
-    segment = re.sub(r'(en:\s*")[^"]*(")', r"\1" + esc + r"\2", segment, count=1)
+    segment = re.sub(
+        r'(fa:\s*")(?:[^"\\]|\\.)*(")',
+        lambda m: m.group(1) + esc + m.group(2),
+        segment,
+        count=1,
+    )
+    segment = re.sub(
+        r'(en:\s*")(?:[^"\\]|\\.)*(")',
+        lambda m: m.group(1) + esc + m.group(2),
+        segment,
+        count=1,
+    )
     html = re.sub(
         r'(<p class="brand-sub" id="brand-subtitle">)[^<]*(</p>)',
-        r"\1" + html_text(subtitle) + r"\2",
+        lambda m: m.group(1) + html_text(subtitle) + m.group(2),
         html,
         count=1,
     )
 
 if logo:
-    segment = re.sub(r'(logoUrl:\s*")[^"]*(")', r"\1" + js_quote(logo) + r"\2", segment, count=1)
+    segment = re.sub(
+        r'(logoUrl:\s*")(?:[^"\\]|\\.)*(")',
+        lambda m: m.group(1) + js_quote(logo) + m.group(2),
+        segment,
+        count=1,
+    )
 
-html = html[: block.start()] + segment + html[block.end() :]
+html = html[:start] + segment + html[end:]
 
-with open(dest, "w", encoding="utf-8") as f:
+if len(html) < original_len * 0.95:
+    sys.stderr.write("Refusing to write: output looks truncated.\n")
+    sys.exit(1)
+
+with open(path, "w", encoding="utf-8", newline="") as f:
     f.write(html)
 PY
   ok "Brand settings applied to HTML"
@@ -292,15 +343,10 @@ install_standard() {
 }
 
 install_pro() {
-  local tmp_file
-
   info "Installing ${C_BOLD}PGClock Pro${C_RESET}..."
   prompt_pro_branding
-
-  tmp_file="$(mktemp)"
-  download_template "$URL_PRO" "$tmp_file"
-  apply_brand_pro "$tmp_file" "$TARGET_FILE"
-  rm -f "$tmp_file"
+  download_template "$URL_PRO" "$TARGET_FILE"
+  apply_brand_pro "$TARGET_FILE"
 }
 
 print_success_box() {
