@@ -4,102 +4,108 @@
 
 <h1 align="center">PGClock</h1>
 
-<p align="center" dir="rtl">
-  قالب فارسی، سبک و شیشه‌ای برای صفحه اشتراک کاربران پاسارگارد
+<p align="center">
+  نسخهٔ استاندارد — قالب شیشه‌ای صفحهٔ اشتراک برای Pasarguard
 </p>
-<p align="center" dir="rtl">
-🔴 این قالب تنها از زبان فارسی پشتیبانی میکند 🔴
+
+<p align="center">
+  <a href="#نصب-خودکار">نصب خودکار</a> ·
+  <a href="#نصب-دستی">نصب دستی</a> ·
+  <a href="#تنظیمات-پنل">تنظیمات پنل</a> ·
+  <a href="#نسخه‌های-دیگر">نسخه‌های دیگر</a>
 </p>
 
 ---
 
-<div dir="rtl" align="right">
+## ویژگی‌ها
 
-<p><strong>تغییرات جدید</strong></p>
+- رابط شیشه‌ای برای موبایل، تبلت و دسکتاپ
+- اطلاعات اشتراک، هشدارها و نمودار مصرف
+- اپلیکیشن‌ها و اعلان‌ها از پنل
+- کپی، QR و دانلود WireGuard برای کانفیگ‌ها
+- تشخیص OS و مرتب‌سازی اپ‌ها
+- یک فایل HTML — بدون Node.js و build
 
-- اضافه شدن نسخه هاست
-- تغییر فونت به وزیرمتن
-- نمایش زمان باقیمانده بصورت روز ( به جای تاریخ )
-- اضافه شدن هشدار کم بودن حجم یا زمان
-- نمایش ظرفیت HWID اکانت 
-- نمایش آیکن های اپلیکیشن ها
-- قابلیت دانلود کانفیگ وایرگارد
-- رفع مشکل نمایش صفحه ورود توکن
-- رفع نواقص طراحی و بهینه سازی کد ها
+---
 
-<p><strong>ویژگی‌ها</strong></p>
+## نصب خودکار
 
-- طراحی شیشه‌ای، مدرن و مناسب موبایل
-- نمایش اطلاعات اشتراک و نمودار مصرف کاربر
-- دریافت خودکار اپلیکیشن‌ها و اعلان از پنل
-- نمایش لینک کانفیگ‌ها همراه با کپی و کیوآرکد
-- تشخیص سیستم‌عامل و مرتب‌سازی اپلیکیشن‌ها
-- کدنویسی سبک، تمیز و بدون نیاز به نصب ابزار اضافه
-
-<p><strong>نصب سریع</strong></p>
-
-وارد سرور پاسارگارد شوید و فایل قالب را دانلود کنید:
-
-</div>
+روی سرور **Ubuntu** با Pasarguard نصب‌شده:
 
 ```bash
-sudo mkdir -p /var/lib/pasarguard/templates/subscription/
-sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html
+curl -fsSL https://raw.githubusercontent.com/Mrclocks/PGClock/main/install.sh -o /tmp/pgclock-install.sh && sudo bash /tmp/pgclock-install.sh
 ```
 
-<div dir="rtl" align="right">
-
-فایل تنظیمات پاسارگارد را ویرایش کنید:
-
-</div>
+یا:
 
 ```bash
-sudo nano /opt/pasarguard/.env
+wget -qO /tmp/pgclock-install.sh https://raw.githubusercontent.com/Mrclocks/PGClock/main/install.sh && sudo bash /tmp/pgclock-install.sh
 ```
 
-<div dir="rtl" align="right">
+در منو گزینه **۲) PGClock** را انتخاب کنید.
 
-مقادیر زیر را اضافه یا اصلاح کنید:
+### اسکریپت چه کار می‌کند؟
 
-</div>
+1. منوی انتخاب نسخه (`Lite` / `PGClock` / `Pro`)
+2. ذخیرهٔ `index.html` در:
+
+```text
+/var/lib/pasarguard/templates/subscription/index.html
+```
+
+3. به‌روزرسانی `/opt/pasarguard/.env`:
 
 ```env
 CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"
 SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
 ```
 
-<div dir="rtl" align="right">
+4. اجرای `pasarguard restart`
 
-در پایان پاسارگارد را ریستارت کنید:
+> **پیش‌نیازها:** `wget`، `curl`، `python3`
 
-</div>
+---
+
+## نصب دستی
+
+### ۱. دانلود قالب
+
+```bash
+sudo mkdir -p /var/lib/pasarguard/templates/subscription/
+sudo wget -N -O /var/lib/pasarguard/templates/subscription/index.html \
+  https://raw.githubusercontent.com/Mrclocks/PGClock/main/index.html
+```
+
+### ۲. تنظیم Pasarguard
+
+```bash
+sudo nano /opt/pasarguard/.env
+```
+
+اضافه یا به‌روز کنید:
+
+```env
+CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"
+SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
+```
+
+### ۳. راه‌اندازی مجدد
 
 ```bash
 sudo pasarguard restart
 ```
 
-<p><strong>نصب روی هاست</strong></p>
+---
 
-برای استفاده از نسخه هاست فایل های داخل Host Version را در روت هاست خود آپلود کنید و در فایل index.php مقدار BASE_URL را مانند مثال زیر به آدرس پنل خود تغییر دهید.
-</div>
+## تنظیمات پنل
 
-```bash
-const BASE_URL = 'https://panel-URL:PORT';
-```
+1. پنل Pasarguard → **Settings → Subscription**
+2. ویرایش **announcement** و **announcement link**
+3. افزودن/ویرایش اپ‌ها در بخش apps
 
-<div dir="rtl" align="right">
-<div dir="rtl" align="right">
+---
 
-<p><strong>تنظیم اعلان و اپلیکیشن‌ها از پنل</strong></p>
+## نسخه‌های دیگر
 
-این قالب اعلان‌ها و لیست اپلیکیشن‌ها را از تنظیمات اشتراک پنل دریافت می‌کند؛ بنابراین برای ویرایش آن‌ها نیازی به تغییر فایل قالب نیست.
-
-1. وارد پنل پاسارگارد شوید.
-2. به بخش تنظیمات بروید.
-3. وارد بخش اشتراک شوید.
-4. متن اعلان و در صورت نیاز لینک اعلان را ویرایش کنید.
-5. لیست برنامه‌ها را در قسمت اپلیکیشن‌ها اضافه یا ویرایش کنید.
-
-قالب به صورت خودکار برنامه‌ها را بر اساس سیستم‌عامل مرتب می‌کند و اگر سیستم‌عامل کاربر قابل تشخیص باشد، همان دسته را در اولویت نمایش می‌دهد.
-
-</div>
+- [PGClock Lite](https://github.com/Mrclocks/PGClockLite) — سبک‌تر و سریع‌تر
+- [PGClock Pro](https://github.com/Mrclocks/PGClockPRO) — برند، زیرعنوان و لوگوی سفارشی
