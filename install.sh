@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.3.1"
+readonly SCRIPT_VERSION="1.3.2"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -159,44 +159,43 @@ def js_quote(value: str) -> str:
 def html_text(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-def replace_brand_field(source: str, field: str, value: str) -> str:
+def replace_brand_string(source: str, field: str, value: str) -> str:
+    """Replace one quoted string inside DEFAULT_BRAND only."""
     pattern = (
         r'(var DEFAULT_BRAND = \{[\s\S]*?'
         + re.escape(field)
-        + r':\s*")(?:[^"\\]|\\.)*(")'
+        + r'\s*:\s*")(?:[^"\\]|\\.)*(")'
     )
-    return re.sub(
+    updated, count = re.subn(
         pattern,
         lambda m: m.group(1) + js_quote(value) + m.group(2),
         source,
         count=1,
     )
+    if count != 1:
+        sys.stderr.write("Could not update DEFAULT_BRAND field: " + field + "\n")
+        sys.exit(1)
+    return updated
 
-required_markers = [
+required = [
     "var DEFAULT_BRAND = {",
-    'var BRAND = window.MRCLOCK_BRAND',
+    "var BRAND = window.MRCLOCK_BRAND",
     "function init(",
     "init();",
     "</html>",
 ]
 
-for marker in required_markers:
-    if marker not in html:
-        sys.stderr.write(
-            "Invalid Pro template: missing " + marker + ". "
-            "Use the PGClockPRO repository template.\n"
-        )
+for token in required:
+    if token not in html:
+        sys.stderr.write("Invalid Pro template: missing " + token + "\n")
         sys.exit(1)
 
 if original_len < 80000:
-    sys.stderr.write(
-        "Pro template looks too small (" + str(original_len) + " bytes). "
-        "Expected the full PGClockPRO index.html.\n"
-    )
+    sys.stderr.write("Pro template looks too small (" + str(original_len) + " bytes).\n")
     sys.exit(1)
 
 if name:
-    html = replace_brand_field(html, "name", name)
+    html = replace_brand_string(html, "name", name)
     html = re.sub(
         r'(<h1 class="brand-title" id="brand-title">)[^<]*(</h1>)',
         lambda m: m.group(1) + html_text(name) + m.group(2),
@@ -205,8 +204,8 @@ if name:
     )
 
 if subtitle:
-    html = replace_brand_field(html, "fa", subtitle)
-    html = replace_brand_field(html, "en", subtitle)
+    html = replace_brand_string(html, "fa", subtitle)
+    html = replace_brand_string(html, "en", subtitle)
     html = re.sub(
         r'(<p class="brand-sub" id="brand-subtitle">)[^<]*(</p>)',
         lambda m: m.group(1) + html_text(subtitle) + m.group(2),
@@ -215,14 +214,14 @@ if subtitle:
     )
 
 if logo:
-    html = replace_brand_field(html, "logoUrl", logo)
+    html = replace_brand_string(html, "logoUrl", logo)
 
-for marker in required_markers:
-    if marker not in html:
-        sys.stderr.write("Template became invalid after branding: missing " + marker + "\n")
+for token in required:
+    if token not in html:
+        sys.stderr.write("Template became invalid after branding: missing " + token + "\n")
         sys.exit(1)
 
-if "};RAND" in html or "RAND = window.MRCLOCK_BRAND" in html:
+if re.search(r'\};RAND\s*=', html):
     sys.stderr.write("Template JavaScript was corrupted during branding.\n")
     sys.exit(1)
 
