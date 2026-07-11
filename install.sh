@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.2.1"
+readonly SCRIPT_VERSION="1.3.0"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -129,8 +129,11 @@ apply_brand_pro() {
   local file="$1"
 
   info "Applying PGClock Pro brand settings..."
-  BRAND_NAME="${BRAND_NAME:-}" BRAND_SUBTITLE="${BRAND_SUBTITLE:-}" BRAND_LOGO="${BRAND_LOGO:-}" \
-  python3 - "$file" <<'PY'
+  export BRAND_NAME="${BRAND_NAME:-}"
+  export BRAND_SUBTITLE="${BRAND_SUBTITLE:-}"
+  export BRAND_LOGO="${BRAND_LOGO:-}"
+
+  python3 - "$file" <<'PY' || return 1
 import os
 import re
 import sys
@@ -144,9 +147,6 @@ with open(path, "r", encoding="utf-8") as f:
     html = f.read()
 
 original_len = len(html)
-if original_len < 1000:
-    sys.stderr.write("Template file looks too small or incomplete.\n")
-    sys.exit(1)
 
 def js_quote(value: str) -> str:
     return (
@@ -159,43 +159,38 @@ def js_quote(value: str) -> str:
 def html_text(value: str) -> str:
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-def find_brand_block(text: str):
-    marker = "var DEFAULT_BRAND = {"
-    start = text.find(marker)
-    if start == -1:
-        return None
-    brace = text.find("{", start)
-    if brace == -1:
-        return None
-    depth = 0
-    for i in range(brace, len(text)):
-        ch = text[i]
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                end = i + 1
-                if end < len(text) and text[end] == ";":
-                    end += 1
-                return start, end
-    return None
-
-bounds = find_brand_block(html)
-if not bounds:
-    sys.stderr.write("DEFAULT_BRAND block not found in template.\n")
-    sys.exit(1)
-
-start, end = bounds
-segment = html[start:end]
-
-if name:
-    segment = re.sub(
-        r'(name:\s*")(?:[^"\\]|\\.)*(")',
-        lambda m: m.group(1) + js_quote(name) + m.group(2),
-        segment,
+def replace_brand_field(source: str, field: str, value: str) -> str:
+    pattern = (
+        r'(var DEFAULT_BRAND = \{[\s\S]*?'
+        + re.escape(field)
+        + r':\s*")(?:[^"\\]|\\.)*(")'
+    )
+    return re.sub(
+        pattern,
+        lambda m: m.group(1) + js_quote(value) + m.group(2),
+        source,
         count=1,
     )
+
+required_markers = [
+    "var DEFAULT_BRAND = {",
+    'var BRAND = window.MRCLOCK_BRAND',
+    "function init(",
+    "init();",
+    "</html>",
+]
+
+for marker in required_markers:
+    if marker not in html:
+        sys.stderr.write("Template is incomplete before branding: missing " + marker + "\n")
+        sys.exit(1)
+
+if original_len < 50000:
+    sys.stderr.write("Template file looks too small (" + str(original_len) + " bytes).\n")
+    sys.exit(1)
+
+if name:
+    html = replace_brand_field(html, "name", name)
     html = re.sub(
         r'(<h1 class="brand-title" id="brand-title">)[^<]*(</h1>)',
         lambda m: m.group(1) + html_text(name) + m.group(2),
@@ -204,19 +199,8 @@ if name:
     )
 
 if subtitle:
-    esc = js_quote(subtitle)
-    segment = re.sub(
-        r'(fa:\s*")(?:[^"\\]|\\.)*(")',
-        lambda m: m.group(1) + esc + m.group(2),
-        segment,
-        count=1,
-    )
-    segment = re.sub(
-        r'(en:\s*")(?:[^"\\]|\\.)*(")',
-        lambda m: m.group(1) + esc + m.group(2),
-        segment,
-        count=1,
-    )
+    html = replace_brand_field(html, "fa", subtitle)
+    html = replace_brand_field(html, "en", subtitle)
     html = re.sub(
         r'(<p class="brand-sub" id="brand-subtitle">)[^<]*(</p>)',
         lambda m: m.group(1) + html_text(subtitle) + m.group(2),
@@ -225,14 +209,16 @@ if subtitle:
     )
 
 if logo:
-    segment = re.sub(
-        r'(logoUrl:\s*")(?:[^"\\]|\\.)*(")',
-        lambda m: m.group(1) + js_quote(logo) + m.group(2),
-        segment,
-        count=1,
-    )
+    html = replace_brand_field(html, "logoUrl", logo)
 
-html = html[:start] + segment + html[end:]
+for marker in required_markers:
+    if marker not in html:
+        sys.stderr.write("Template became invalid after branding: missing " + marker + "\n")
+        sys.exit(1)
+
+if "};RAND" in html or "RAND = window.MRCLOCK_BRAND" in html:
+    sys.stderr.write("Template JavaScript was corrupted during branding.\n")
+    sys.exit(1)
 
 if len(html) < original_len * 0.95:
     sys.stderr.write("Refusing to write: output looks truncated.\n")
@@ -241,6 +227,7 @@ if len(html) < original_len * 0.95:
 with open(path, "w", encoding="utf-8", newline="") as f:
     f.write(html)
 PY
+
   ok "Brand settings applied to HTML"
 }
 
@@ -343,10 +330,21 @@ install_standard() {
 }
 
 install_pro() {
+  local backup
+
   info "Installing ${C_BOLD}PGClock Pro${C_RESET}..."
   prompt_pro_branding
-  download_template "$URL_PRO" "$TARGET_FILE"
-  apply_brand_pro "$TARGET_FILE"
+
+  # Use the full standard template, then patch branding fields only.
+  download_template "$URL_STANDARD" "$TARGET_FILE"
+
+  backup="${TARGET_FILE}.bak"
+  cp "$TARGET_FILE" "$backup"
+  if ! apply_brand_pro "$TARGET_FILE"; then
+    mv "$backup" "$TARGET_FILE"
+    fail "Pro branding failed. The previous template backup was restored."
+  fi
+  rm -f "$backup"
 }
 
 print_success_box() {
