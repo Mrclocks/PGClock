@@ -367,6 +367,25 @@ configure_env() {
 }
 
 restart_pasarguard() {
+  local answer
+
+  log_blank
+  log_line "${C_BOLD}Restart Pasarguard?${C_RESET}"
+  log_line "${C_DIM}If you previously used other templates, a restart is not required.${C_RESET}"
+  log_line "${C_DIM}If this is your first install, you should restart.${C_RESET}"
+  log_blank
+  read_tty "$(printf '%b' "${C_BOLD}Restart now? [Y/n]: ${C_RESET}")" answer
+  answer="${answer:-y}"
+
+  case "${answer,,}" in
+    y|yes)
+      ;;
+    *)
+      info "Skipped Pasarguard restart. Run manually later if needed: pasarguard restart"
+      return 0
+      ;;
+  esac
+
   info "Restarting Pasarguard..."
   if command -v pasarguard >/dev/null 2>&1; then
     if pasarguard restart; then
