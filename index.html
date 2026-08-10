@@ -338,42 +338,52 @@
       z-index: 1;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 8px;
+      gap: 14px;
     }
     .meter-box {
-      padding: 14px 14px 12px;
-      border-radius: var(--r-lg);
-      background: var(--fill);
-      border: 0.5px solid var(--glass-stroke-soft);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
     .meter-title {
-      display: block;
       margin: 0 0 10px;
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: rgba(255,255,255,0.78);
+      color: var(--text);
     }
     .meter-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
-    .meter-stats .k {
+    .meter-stat {
+      padding: 12px 14px;
+      border-radius: var(--r-lg);
+      background: var(--fill);
+      border: 0.5px solid var(--glass-stroke-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      min-width: 0;
+    }
+    .meter-stat .k {
       display: block;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--text-tertiary);
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
-    .meter-stats .v {
+    .meter-stat .v {
+      display: block;
       font-size: 15px;
       font-weight: 700;
       letter-spacing: -0.02em;
       direction: ltr;
       text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .meter-bar {
       position: relative;
@@ -1261,13 +1271,13 @@
 
         <div class="meter-stack">
           <div class="meter-box" id="cell-remain">
-            <span class="meter-title">حجم</span>
+            <h2 class="meter-title">حجم</h2>
             <div class="meter-stats">
-              <div>
+              <div class="meter-stat">
                 <span class="k">باقیمانده</span>
                 <span class="v" id="f-remain">—</span>
               </div>
-              <div>
+              <div class="meter-stat">
                 <span class="k">کل</span>
                 <span class="v" id="f-limit">—</span>
               </div>
@@ -1279,13 +1289,13 @@
           </div>
 
           <div class="meter-box" id="cell-expire">
-            <span class="meter-title">زمان</span>
+            <h2 class="meter-title">زمان</h2>
             <div class="meter-stats">
-              <div>
+              <div class="meter-stat">
                 <span class="k">باقیمانده</span>
                 <span class="v" id="f-expire">—</span>
               </div>
-              <div>
+              <div class="meter-stat">
                 <span class="k">کل</span>
                 <span class="v" id="f-expire-total">—</span>
               </div>
