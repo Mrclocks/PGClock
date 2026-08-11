@@ -2282,18 +2282,19 @@
   }
 
   function timestampFromValue(value) {
-    if (value == null || value === '') return null;
+    if (value == null || value === '' || value === false) return null;
     var n = Number(value);
     if (isFinite(n) && String(value).trim() !== '') {
-      if (n > 0 && n < 100000000000) n *= 1000;
+      if (n <= 0) return null;
+      if (n < 100000000000) n *= 1000;
       return n;
     }
     var time = new Date(value).getTime();
-    return isFinite(time) ? time : null;
+    return isFinite(time) && time > 0 ? time : null;
   }
 
   function remainingState(percent) {
-    if (!isFinite(percent)) return '';
+    if (percent == null || percent === '' || !isFinite(percent)) return '';
     if (percent < 10) return 'danger';
     if (percent <= 25) return 'warn';
     return '';
