@@ -1483,11 +1483,11 @@
 
   function formatBytes(n) {
     if (n == null || isNaN(n)) return '—';
-    if (n === 0) return 'بایت ۰';
+    if (n === 0) return '۰ بایت';
     var u = ['بایت','کیلوبایت','مگابایت','گیگابایت','ترابایت'];
     var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
     var value = (n / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0);
-    return u[i] + ' ' + toPersianDigits(value);
+    return toPersianDigits(value) + ' ' + u[i];
   }
 
   function formatDate(v) {
