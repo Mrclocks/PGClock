@@ -284,6 +284,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       min-height: 28px;
       padding: 0 12px;
       border-radius: var(--r-pill);
@@ -301,6 +302,11 @@
       transition: transform 0.12s ease, filter 0.12s ease;
       -webkit-appearance: none;
       appearance: none;
+    }
+    .btn-sub-link svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
     }
     .btn-sub-link:active { transform: scale(0.96); filter: brightness(0.94); }
 
@@ -1477,11 +1483,11 @@
 
   function formatBytes(n) {
     if (n == null || isNaN(n)) return '—';
-    if (n === 0) return '۰ بایت';
+    if (n === 0) return 'بایت ۰';
     var u = ['بایت','کیلوبایت','مگابایت','گیگابایت','ترابایت'];
     var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
     var value = (n / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0);
-    return toPersianDigits(value) + ' ' + u[i];
+    return u[i] + ' ' + toPersianDigits(value);
   }
 
   function formatDate(v) {
@@ -2514,6 +2520,7 @@
       loadUsage(btn.getAttribute('data-range'));
     });
   });
+  $('btn-sub-link').innerHTML = SVG_QR + '<span>لینک اشتراک</span>';
   $('btn-sub-link').addEventListener('click', openSubscriptionLinkModal);
   $('qr-copy').innerHTML = SVG_COPY;
   $('qr-copy').addEventListener('click', function () {
