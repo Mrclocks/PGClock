@@ -340,33 +340,18 @@
       grid-template-columns: 1fr;
       gap: 8px;
     }
-    .meter-box {
-      padding: 14px;
-      border-radius: var(--r-lg);
-      background:
-        linear-gradient(165deg, rgba(255,255,255,0.06) 0%, transparent 55%),
-        rgba(255, 255, 255, 0.055);
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.14),
-        0 10px 28px rgba(0, 0, 0, 0.18);
-    }
-    .meter-title {
-      margin: 0 0 12px;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
+    .meter-group {
+      display: grid;
+      gap: 8px;
     }
     .meter-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-bottom: 10px;
     }
     .meter-stat {
       padding: 12px 14px;
-      border-radius: 16px;
+      border-radius: var(--r-lg);
       background: transparent;
       border: 0.5px solid rgba(255, 255, 255, 0.16);
       box-shadow: none;
@@ -1275,15 +1260,14 @@
         </div>
 
         <div class="meter-stack">
-          <div class="meter-box" id="cell-remain">
-            <h2 class="meter-title">حجم</h2>
+          <div class="meter-group" id="cell-remain">
             <div class="meter-stats">
               <div class="meter-stat">
-                <span class="k">باقیمانده</span>
+                <span class="k">حجم باقیمانده</span>
                 <span class="v" id="f-remain">—</span>
               </div>
               <div class="meter-stat">
-                <span class="k">کل</span>
+                <span class="k">حجم کل</span>
                 <span class="v" id="f-limit">—</span>
               </div>
             </div>
@@ -1293,15 +1277,14 @@
             </div>
           </div>
 
-          <div class="meter-box" id="cell-expire">
-            <h2 class="meter-title">زمان</h2>
+          <div class="meter-group" id="cell-expire">
             <div class="meter-stats">
               <div class="meter-stat">
-                <span class="k">باقیمانده</span>
+                <span class="k">زمان باقیمانده</span>
                 <span class="v" id="f-expire">—</span>
               </div>
               <div class="meter-stat">
-                <span class="k">کل</span>
+                <span class="k">زمان کل</span>
                 <span class="v" id="f-expire-total">—</span>
               </div>
             </div>
@@ -2239,18 +2222,19 @@
   }
 
   function timestampFromValue(value) {
-    if (value == null || value === '') return null;
+    if (value == null || value === '' || value === false) return null;
     var n = Number(value);
     if (isFinite(n) && String(value).trim() !== '') {
-      if (n > 0 && n < 100000000000) n *= 1000;
+      if (n <= 0) return null;
+      if (n < 100000000000) n *= 1000;
       return n;
     }
     var time = new Date(value).getTime();
-    return isFinite(time) ? time : null;
+    return isFinite(time) && time > 0 ? time : null;
   }
 
   function remainingState(percent) {
-    if (!isFinite(percent)) return '';
+    if (percent == null || percent === '' || !isFinite(percent)) return '';
     if (percent < 10) return 'danger';
     if (percent <= 25) return 'warn';
     return '';
