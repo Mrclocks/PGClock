@@ -33,9 +33,7 @@
       --fill-thick: rgba(255, 255, 255, 0.08);
       --blue: #20a4ff;
       --green: #37e66f;
-      --yellow: #f5c518;
       --orange: #ff8a00;
-      --red: #ff453a;
       --tap: 48px;
       --shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
       --pad-x: 24px;
@@ -246,41 +244,14 @@
     .status-pill.disabled { background: var(--fill); color: var(--text-secondary); border-color: var(--glass-stroke-soft); }
     .status-pill.on_hold { background: rgba(191, 90, 242, 0.22); color: #e9d5ff; border-color: rgba(191, 90, 242, 0.4); }
 
-    .profile-alert {
+    .info-grid {
       position: relative;
       z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 40px;
-      margin: -6px 0 12px;
-      padding: 10px 12px;
-      border-radius: var(--r-lg);
-      border: 0.5px solid var(--glass-stroke-soft);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      text-align: center;
-      overflow: hidden;
-    }
-    .profile-alert.warn {
-      color: #fcd34d;
-      background: rgba(255, 159, 10, 0.14);
-      border-color: rgba(255, 159, 10, 0.38);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 28px rgba(255, 159, 10, 0.08);
-    }
-    .profile-alert.danger {
-      color: #ffb4b0;
-      background: rgba(255, 69, 58, 0.16);
-      border-color: rgba(255, 69, 58, 0.45);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 10px 28px rgba(255, 69, 58, 0.1);
-    }
-    .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 8px;
     }
+    .info-grid + .info-grid { margin-top: 8px; }
     .info-cell {
       padding: 12px 16px;
       border-radius: var(--r-lg);
@@ -313,6 +284,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       min-height: 28px;
       padding: 0 12px;
       border-radius: var(--r-pill);
@@ -331,116 +303,13 @@
       -webkit-appearance: none;
       appearance: none;
     }
+    .btn-sub-link svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
     .btn-sub-link:active { transform: scale(0.96); filter: brightness(0.94); }
 
-    .meter-stack {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-    }
-    .meter-group {
-      display: grid;
-      gap: 8px;
-    }
-    .meter-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .meter-stat {
-      padding: 12px 14px;
-      border-radius: var(--r-lg);
-      background: transparent;
-      border: 0.5px solid rgba(255, 255, 255, 0.16);
-      box-shadow: none;
-      min-width: 0;
-    }
-    .meter-stat .k {
-      display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-tertiary);
-      margin-bottom: 4px;
-    }
-    .meter-stat .v {
-      display: block;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      direction: ltr;
-      text-align: right;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .meter-bar {
-      position: relative;
-      height: 36px;
-      border-radius: 14px;
-      background: var(--fill);
-      border: 0.5px solid var(--glass-stroke-soft);
-      overflow: hidden;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-    }
-    .meter-bar-fill {
-      position: absolute;
-      inset-block: 0;
-      inset-inline-start: 0;
-      width: var(--meter-pct, 0%);
-      border-radius: inherit;
-      transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(55,230,111,0.92), rgba(55,230,111,0.28));
-      border: 0.5px solid rgba(55, 230, 111, 0.38);
-    }
-    .meter-bar.tone-green .meter-bar-fill {
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(55,230,111,0.94), rgba(55,230,111,0.28));
-      border-color: rgba(55, 230, 111, 0.4);
-    }
-    .meter-bar.tone-yellow .meter-bar-fill {
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(245,197,24,0.94), rgba(245,197,24,0.28));
-      border-color: rgba(245, 197, 24, 0.42);
-    }
-    .meter-bar.tone-orange .meter-bar-fill {
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(255,138,0,0.94), rgba(255,138,0,0.28));
-      border-color: rgba(255, 138, 0, 0.42);
-    }
-    .meter-bar.tone-red .meter-bar-fill {
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(255,69,58,0.94), rgba(255,69,58,0.28));
-      border-color: rgba(255, 69, 58, 0.45);
-    }
-    .meter-bar.tone-infinite .meter-bar-fill {
-      width: 100%;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04)),
-        linear-gradient(90deg, rgba(32,164,255,0.7), rgba(32,164,255,0.2));
-      border-color: rgba(32, 164, 255, 0.35);
-    }
-    .meter-bar-pct {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.45);
-      pointer-events: none;
-    }
 
     .usage-card {
       padding: var(--pad-y) var(--pad-x);
@@ -1255,43 +1124,22 @@
           </div>
         </div>
 
-        <div class="profile-alert hidden" id="profile-alert" role="status" aria-live="polite">
-          <span id="profile-alert-text">—</span>
-        </div>
-
-        <div class="meter-stack">
-          <div class="meter-group" id="cell-remain">
-            <div class="meter-stats">
-              <div class="meter-stat">
-                <span class="k">حجم باقیمانده</span>
-                <span class="v" id="f-remain">—</span>
-              </div>
-              <div class="meter-stat">
-                <span class="k">حجم کل</span>
-                <span class="v" id="f-limit">—</span>
-              </div>
-            </div>
-            <div class="meter-bar tone-infinite" id="traffic-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-              <div class="meter-bar-fill" id="traffic-bar-fill"></div>
-              <span class="meter-bar-pct" id="traffic-bar-pct">—</span>
-            </div>
+        <div class="info-grid">
+          <div class="info-cell">
+            <span class="k">حجم باقیمانده</span>
+            <span class="v" id="f-remain">—</span>
           </div>
-
-          <div class="meter-group" id="cell-expire">
-            <div class="meter-stats">
-              <div class="meter-stat">
-                <span class="k">زمان باقیمانده</span>
-                <span class="v" id="f-expire">—</span>
-              </div>
-              <div class="meter-stat">
-                <span class="k">زمان کل</span>
-                <span class="v" id="f-expire-total">—</span>
-              </div>
-            </div>
-            <div class="meter-bar tone-infinite" id="time-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-              <div class="meter-bar-fill" id="time-bar-fill"></div>
-              <span class="meter-bar-pct" id="time-bar-pct">—</span>
-            </div>
+          <div class="info-cell">
+            <span class="k">حجم کل</span>
+            <span class="v" id="f-limit">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">زمان باقیمانده</span>
+            <span class="v" id="f-expire">—</span>
+          </div>
+          <div class="info-cell">
+            <span class="k">زمان کل</span>
+            <span class="v" id="f-expire-total">—</span>
           </div>
         </div>
 
@@ -1683,11 +1531,11 @@
 
   function formatBytes(n) {
     if (n == null || isNaN(n)) return '—';
-    if (n === 0) return '۰ بایت';
+    if (n === 0) return 'بایت ۰';
     var u = ['بایت','کیلوبایت','مگابایت','گیگابایت','ترابایت'];
     var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
     var value = (n / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0);
-    return toPersianDigits(value) + ' ' + u[i];
+    return u[i] + ' ' + toPersianDigits(value);
   }
 
   function formatDate(v) {
@@ -1737,40 +1585,6 @@
     return toPersianDigits(n) + ' دستگاه';
   }
 
-  function clampPercent(value) {
-    if (!isFinite(value)) return null;
-    return Math.max(0, Math.min(100, value));
-  }
-
-  function meterTone(percent) {
-    if (percent == null || !isFinite(percent)) return 'infinite';
-    if (percent > 50) return 'green';
-    if (percent > 25) return 'yellow';
-    if (percent >= 10) return 'orange';
-    return 'red';
-  }
-
-  function setMeterBar(barId, fillId, pctId, percent) {
-    var bar = $(barId);
-    var fill = $(fillId);
-    var pct = $(pctId);
-    if (!bar || !fill || !pct) return;
-
-    var tone = meterTone(percent);
-    bar.className = 'meter-bar tone-' + tone;
-
-    if (percent == null || !isFinite(percent)) {
-      fill.style.setProperty('--meter-pct', '100%');
-      pct.textContent = '∞';
-      bar.removeAttribute('aria-valuenow');
-      return;
-    }
-
-    var rounded = Math.round(percent);
-    fill.style.setProperty('--meter-pct', rounded + '%');
-    pct.textContent = toPersianDigits(rounded) + '٪';
-    bar.setAttribute('aria-valuenow', String(rounded));
-  }
 
   function normalizeStatus(s) {
     if (!s) return 'active';
@@ -2293,68 +2107,6 @@
     return isFinite(time) && time > 0 ? time : null;
   }
 
-  function remainingState(percent) {
-    if (percent == null || percent === '' || !isFinite(percent)) return '';
-    if (percent < 10) return 'danger';
-    if (percent <= 25) return 'warn';
-    return '';
-  }
-
-  function trafficRemainPercent(user) {
-    var limit = Number(user && user.data_limit);
-    if (!isFinite(limit) || limit <= 0) return null;
-    var used = Number(user.used_traffic) || 0;
-    return clampPercent((Math.max(0, limit - used) / limit) * 100);
-  }
-
-  function timeRemainPercent(user, status) {
-    var end = expireEndTimestamp(user, status);
-    if (!end) return null;
-    var now = Date.now();
-    if (now >= end) return 0;
-
-    if (status === 'on_hold' && user.on_hold_expire_duration && !user.on_hold_timeout) {
-      var holdTotal = Number(user.on_hold_expire_duration) * 1000;
-      if (!isFinite(holdTotal) || holdTotal <= 0) return null;
-      return clampPercent(((end - now) / holdTotal) * 100);
-    }
-
-    var start = timestampFromValue(user.created_at);
-    if (!start || start >= end) return null;
-    return clampPercent(((end - now) / (end - start)) * 100);
-  }
-
-  function trafficAlertState(user) {
-    return remainingState(trafficRemainPercent(user));
-  }
-
-  function timeAlertState(user, status) {
-    var percent = timeRemainPercent(user, status);
-    if (percent === 0) return 'danger';
-    return remainingState(percent);
-  }
-
-  function renderProfileAlert(user, status) {
-    var trafficState = trafficAlertState(user);
-    var timeState = timeAlertState(user, status);
-    var alertState = trafficState === 'danger' || timeState === 'danger' ? 'danger' : (trafficState || timeState);
-    var subjects = [];
-
-    if (trafficState) subjects.push('حجم');
-    if (timeState) subjects.push('زمان');
-
-    var box = $('profile-alert');
-    if (!alertState || !subjects.length) {
-      box.className = 'profile-alert hidden';
-      $('profile-alert-text').textContent = '';
-      return;
-    }
-
-    box.className = 'profile-alert ' + alertState;
-    $('profile-alert-text').textContent = subjects.length > 1
-      ? 'حجم و زمان شما رو به اتمام است'
-      : subjects[0] + ' شما رو به اتمام است';
-  }
 
   function renderUser(user) {
     var status = normalizeStatus(user.status);
@@ -2373,7 +2125,6 @@
     $('f-limit').textContent = !limit ? '∞' : formatBytes(limit);
     $('f-remain').textContent = !limit ? '∞' : formatBytes(remain);
     $('f-hwid-limit').textContent = formatDeviceLimit(user.hwid_limit);
-    setMeterBar('traffic-bar', 'traffic-bar-fill', 'traffic-bar-pct', trafficRemainPercent(user));
 
     if (status === 'on_hold' && user.on_hold_timeout) {
       $('f-expire').textContent = formatRemainingDays(user.on_hold_timeout);
@@ -2384,10 +2135,7 @@
       $('f-expire').textContent = formatRemainingDays(user.expire);
     }
     $('f-expire-total').textContent = formatTotalDuration(user, status);
-    setMeterBar('time-bar', 'time-bar-fill', 'time-bar-pct', timeRemainPercent(user, status));
-
     $('f-online').textContent = user.online_at ? formatDate(user.online_at) : 'هرگز';
-    renderProfileAlert(user, status);
   }
 
   function renderAnnounce(headers) {
@@ -2849,6 +2597,7 @@
       loadUsage(btn.getAttribute('data-range'));
     });
   });
+  $('btn-sub-link').innerHTML = SVG_QR + '<span>لینک اشتراک</span>';
   $('btn-sub-link').addEventListener('click', openSubscriptionLinkModal);
   $('qr-copy').innerHTML = SVG_COPY;
   $('qr-copy').addEventListener('click', function () {
