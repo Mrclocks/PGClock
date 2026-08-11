@@ -5,7 +5,7 @@
 #
 set -euo pipefail
 
-readonly SCRIPT_VERSION="1.4.1"
+readonly SCRIPT_VERSION="1.4.2"
 readonly TARGET_DIR="/var/lib/pasarguard/templates/subscription"
 readonly TARGET_FILE="${TARGET_DIR}/index.html"
 readonly ENV_FILE="/opt/pasarguard/.env"
@@ -123,9 +123,30 @@ validate_logo_url() {
 download_template() {
   local url="$1"
   local dest="$2"
+  local tmp
+  # Bust CDN/browser caches and avoid wget -N/-O, which often keeps a stale local file.
+  local fetch_url="${url}?t=$(date +%s)"
+
   info "Downloading template from GitHub..."
-  wget -N -O "$dest" "$url" || fail "Download failed. Check your internet connection and the URL."
-  [[ -s "$dest" ]] || fail "Downloaded file is empty."
+  tmp="$(mktemp "${dest}.XXXXXX")"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL \
+      -H 'Cache-Control: no-cache' \
+      -H 'Pragma: no-cache' \
+      "$fetch_url" -o "$tmp" \
+      || { rm -f "$tmp"; fail "Download failed. Check your internet connection and the URL."; }
+  else
+    wget -qO "$tmp" "$fetch_url" \
+      || { rm -f "$tmp"; fail "Download failed. Check your internet connection and the URL."; }
+  fi
+
+  [[ -s "$tmp" ]] || { rm -f "$tmp"; fail "Downloaded file is empty."; }
+  if ! grep -qiE '</html>|function |<!DOCTYPE' "$tmp"; then
+    rm -f "$tmp"
+    fail "Downloaded file does not look like a valid HTML template."
+  fi
+
+  mv -f "$tmp" "$dest"
   ok "index.html downloaded"
 }
 
